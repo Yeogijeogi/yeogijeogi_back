@@ -3,6 +3,7 @@ from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
 from beanie import init_beanie
+from fastapi import FastAPI
 
 from app.db.models.walks import Walks
 from app.db.models.walk_points import WalkPoints
@@ -14,7 +15,7 @@ database = client[settings.mongo_database_name]
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
 @asynccontextmanager
-async def db_lifespan():
+async def db_lifespan(app: FastAPI):
     ping_response = await database.command("ping")
 
     if int(ping_response["ok"]) != 1:
