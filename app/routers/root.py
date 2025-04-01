@@ -1,6 +1,4 @@
-from fastapi import APIRouter, Depends
-from app.dependencies.firebase import get_auth
-
+from fastapi import APIRouter
 router = APIRouter()
 @router.get("/")
 def read_root():
