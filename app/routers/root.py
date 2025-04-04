@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.dependencies.firebase import get_auth
+#from app.dependencies.firebase import get_auth
 
 router = APIRouter()
 @router.get("/")
