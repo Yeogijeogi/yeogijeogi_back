@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - develop
+#env:
+#   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
 jobs:
   build:
@@ -49,7 +51,6 @@ jobs:
            echo "DEV_DOCKER_CONTAINER=${{ secrets.DEV_DOCKER_CONTAINER}}" >> .env
            echo "DEV_DOCKER_IMAGE=${{ secrets.DEV_DOCKER_IMAGE}}" >> .env
            echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-           echo " 
            cat .env
 
       - name: Stop and Remove Old Dev Containers
