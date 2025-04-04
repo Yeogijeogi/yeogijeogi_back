@@ -45,13 +45,17 @@ jobs:
   deploy:
     needs: build
     runs-on: self-hosted
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      DEV_DOCKER_IMAGE: ${{ secrets.DEV_DOCKER_IMAGE }}
+      DEV_DOCKER_CONTAINER: ${{ secrets.DEV_DOCKER_CONTAINER }}
     steps:
-      - name: Set Up ENV
-        run: |
-           echo "DEV_DOCKER_CONTAINER=${{ secrets.DEV_DOCKER_CONTAINER}}" >> .env
-           echo "DEV_DOCKER_IMAGE=${{ secrets.DEV_DOCKER_IMAGE}}" >> .env
-           echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-           cat .env
+#      - name: Set Up ENV #env파일을 만들어서 ec2에 전달하는 코드
+#        run: |
+#           echo "DEV_DOCKER_CONTAINER=${{ secrets.DEV_DOCKER_CONTAINER}}" >> .env
+#           echo "DEV_DOCKER_IMAGE=${{ secrets.DEV_DOCKER_IMAGE}}" >> .env
+#           echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
+#           cat .env
 
       - name: Stop and Remove Old Dev Containers
         run: |
