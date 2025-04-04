@@ -64,5 +64,5 @@ jobs:
 
       - name: Run Dev Container
         run: |
-            docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
-            docker run --env-file ./.env -d -p 8001:8000 --name ${{ env.DEV_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
+            sudo docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
+            sudo docker run --env-file ./.env -d -p 8001:8000 --name ${{ env.DEV_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
