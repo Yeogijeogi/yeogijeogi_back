@@ -33,6 +33,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
+          context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: yeogijeogi/yeogijeogi_dev:latest
           annotations: ${{ steps.meta.outputs.annotations }}
