@@ -58,11 +58,7 @@ jobs:
           sudo docker stop ${{ env.DEV_DOCKER_CONTAINER }} || true && sudo docker rm ${{ env.DEV_DOCKER_CONTAINER }} || true
           sudo docker rmi ${{ env.DEV_DOCKER_IMAGE }}:latest || true
 
-      - name: Create Custom Network
-        run: |
-          sudo docker network create yeogijeogi_network || true
-
       - name: Run Dev Container
         run: |
             docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
-            docker run --env-file ./.env -d -p 8001:8000 --name ${{ env.DEV_DOCKER_CONTAINER }} --network yeogijeogi_network ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
+            docker run --env-file ./.env -d -p 8001:8000 --name ${{ env.DEV_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
