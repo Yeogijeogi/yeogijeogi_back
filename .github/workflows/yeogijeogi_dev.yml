@@ -15,11 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: List files (debugging)
-        run: |
-          echo "Listing all files:"
-          find . -type f
-
       - name: Extract Docker image metadata
         id: meta
         uses: docker/metadata-action@v5
