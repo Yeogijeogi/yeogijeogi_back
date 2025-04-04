@@ -49,6 +49,7 @@ jobs:
       DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
       DEV_DOCKER_IMAGE: ${{ secrets.DEV_DOCKER_IMAGE }}
       DEV_DOCKER_CONTAINER: ${{ secrets.DEV_DOCKER_CONTAINER }}
+      DEV_DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
     steps:
 #      - name: Set Up ENV #env파일을 만들어서 ec2에 전달하는 코드
 #        run: |
@@ -56,6 +57,8 @@ jobs:
 #           echo "DEV_DOCKER_IMAGE=${{ secrets.DEV_DOCKER_IMAGE}}" >> .env
 #           echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
 #           cat .env
+      - name: Docker Login (on self-hosted)
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
       - name: Stop and Remove Old Dev Containers
         run: |
