@@ -1,38 +1,15 @@
-from pydantic import AnyUrl, AfterValidator
-from beanie import Document
-import datetime
-from typing import Annotated
-from app.core.config import get_settings
+from pydantic import AnyUrl
+from beanie import Document, BeanieObjectId, Link
+from datetime import datetime
+from app.db.models.users import Users
 
-def create_walks(
-        user_id = "user_id",
-        start_name = "start_name",
-        end_name = "end_name",
-        end_address = "end_address",
-        img_url = "http://example.com",
-        created_at = datetime.datetime(2024, 12, 1)):
-
-    return Walks(
-        user_id=user_id,
-        start_name=start_name,
-        end_name=end_name,
-        end_address=end_address,
-        img_url=img_url,
-        created_at=created_at
-    )
-
-def validate_uuid(token: str) -> str:
-    settings = get_settings()
-    if settings.firebase_auth:
-        # do actual firebase token validation
-        return token
-    else:
-        return token
+# TODO: created_at validator, img_url validator, string length limit
 
 class Walks(Document):
-    user_id: Annotated[str, AfterValidator(validate_uuid)]
-    start_name: str
-    end_name: str
-    end_address: str
+    _id: BeanieObjectId
+    user_id: Link[Users]
+    start_name: str # ex. 안암역
+    end_name: str # ex. 성북천
+    end_address: str # 종료 주소명 ex. 서울 성북구 동선동 2가
     img_url: AnyUrl
-    created_at: datetime.datetime
+    created_at: datetime
