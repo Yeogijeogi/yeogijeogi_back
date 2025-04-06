@@ -19,7 +19,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.DEV_DOCKER_IMAGE }}
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ secrets.DEV_DOCKER_IMAGE }}
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -61,7 +61,7 @@ jobs:
       - name: Stop and Remove Old Dev Containers
         run: |
           sudo docker stop ${{ env.DEV_DOCKER_CONTAINER }} || true && sudo docker rm ${{ env.DEV_DOCKER_CONTAINER }} || true
-          sudo docker rmi ${{ env.DEV_DOCKER_IMAGE }} || true
+          sudo docker rmi ${{ env.DOCKER_HUB_USERNAME }}/${{ env.DEV_DOCKER_IMAGE }} || true
 
       - name: Run Dev Container
         run: |
