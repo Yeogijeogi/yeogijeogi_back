@@ -4,13 +4,15 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
 from beanie import init_beanie
 from fastapi import FastAPI
+from mongomock_motor import AsyncMongoMockClient
 
 from app.db.models.walks import Walks
 from app.db.models.walk_points import WalkPoints
 from app.db.models.walk_summary import WalkSummary
 
 settings = get_settings()
-client = AsyncIOMotorClient(settings.mongo_uri)
+# client = AsyncIOMotorClient(settings.mongo_uri)
+client = AsyncMongoMockClient()
 database = client[settings.mongo_database_name]
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리

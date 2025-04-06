@@ -6,8 +6,8 @@ from typing import Optional
 # .env 파일 내부에 필요 환경변수 작성 필요 ( eg. FIREBASE_AUTH = "cred.json" )
 class Settings(BaseSettings):
     firebase_auth: Optional[str] = None
-    mongo_uri: str
-    mongo_database_name: str # Mongo 에서 사용하는 database 명
+    mongo_uri: Optional[str] = None
+    mongo_database_name: Optional[str] = "test"
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='allow')
 
 @lru_cache
