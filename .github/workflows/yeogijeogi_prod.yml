@@ -61,7 +61,7 @@ jobs:
       - name: Stop and Remove Old Prod Containers
         run: |
           sudo docker stop ${{ env.PROD_DOCKER_CONTAINER }} || true && sudo docker rm ${{ env.PROD_DOCKER_CONTAINER }} || true
-          sudo docker rmi ${{ env.PROD_DOCKER_IMAGE }}:latest || true
+          sudo docker rmi ${{ env.PROD_DOCKER_IMAGE }} || true
 
       - name: Run Prod Container
         run: |
