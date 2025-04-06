@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from routers import root
-from db.mongodb import db_lifespan
+from app.routers import root
+from app.db.mongodb import db_lifespan
 
 app = FastAPI(lifespan=db_lifespan)
 
