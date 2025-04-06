@@ -14,7 +14,15 @@ class Database(ABC):
         return self.client
 
     @abstractmethod
-    def create_user(self, uuid): pass
+    async def check_status(self): pass
+
+class IUserDatabase(ABC):
+    @abstractmethod
+    async def create_user(self, uuid): pass
 
     @abstractmethod
-    def check_status(self): pass
+    async def delete_user(self, uuid): pass
+
+class IWalkSummaryDatabase(ABC):
+    @abstractmethod
+    async def get_total_walk_summary(self, uuid): pass

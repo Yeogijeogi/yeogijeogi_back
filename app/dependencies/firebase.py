@@ -1,10 +1,15 @@
 from functools import lru_cache
-import uuid
 from fastapi import HTTPException
 
 from firebase_admin import initialize_app, credentials, auth
 from app.core.config import get_settings
 from app.dependencies.Auth import Auth
+import requests
+
+import jwt
+
+def check_token(token):
+    return jwt.decode(token, "secret", algorithms=["HS256"])
 
 @lru_cache
 class FirebaseAuth(Auth):
@@ -19,11 +24,11 @@ class FirebaseAuth(Auth):
 
     def verify_token(self, token):
         try:
-            return auth.verify_id_token("token")["user_id"]
+            return check_token(token)["user_id"]
         except: raise HTTPException(status_code=401, detail="token validation failed")
 
     def develop_create_token(self, uid):
-        return auth.create_custom_token(uid=uid)
+        return jwt.encode({"user_id": uid}, 'secret', algorithm="HS256")
 
 def get_auth():
     return FirebaseAuth()
