@@ -30,6 +30,18 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set up Firebase Credentials
+        run: |
+          echo "$FIREBASE_CREDENTIALS" >> app/firebase_credentials.json
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_AUTH_CRED }}
+
+      - name: Set up .env FILE
+        run: |
+          echo "$ENV_FILE" >> app/.env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
