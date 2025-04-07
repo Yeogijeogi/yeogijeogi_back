@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 from app.core.config import get_settings
+from app.schemas.user import GetUserResDTO
+
 
 class Database(ABC):
     def __init__(self):
@@ -14,15 +16,18 @@ class Database(ABC):
         return self.client
 
     @abstractmethod
-    async def check_status(self): pass
+    async def connect_database(self): pass
+
+    @abstractmethod
+    async def check_status(self) -> bool: pass
 
 class IUserDatabase(ABC):
     @abstractmethod
-    async def create_user(self, uuid): pass
+    async def create_user(self, uuid:str) -> None: pass
 
     @abstractmethod
-    async def delete_user(self, uuid): pass
+    async def delete_user(self, uuid:str) -> None: pass
 
 class IWalkSummaryDatabase(ABC):
     @abstractmethod
-    async def get_total_walk_summary(self, uuid): pass
+    async def get_total_walk_summary(self, uuid:str) -> GetUserResDTO: pass
