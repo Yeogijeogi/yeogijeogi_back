@@ -106,6 +106,18 @@ class MongoWalkDataBase(IWalkDatabase):
         except:
             raise HTTPException(status_code=500, detail="Database Deletion Failed")
 
+    async def patch_walk(self, uuid, request):
+        try:
+            walk_data = await Walks.find_one(Walks.id == request.walk_id)
+            if not walk_data:
+                raise HTTPException(status_code=404, detail="Walk data not found")
+
+            walk_data.end_name = request.end_name
+            walk_data.end_address = request.end_address
+            await walk_data.save()
+        except:
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
 class MongoWalkPointsDataBase(IWalkPointDatabase):
     async def create_walk_point(self, uuid, request):
         try:

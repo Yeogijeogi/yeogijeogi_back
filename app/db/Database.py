@@ -34,6 +34,9 @@ class IWalkDatabase(ABC):
     @abstractmethod
     async def get_walk(self, uuid): pass
 
+    @abstractmethod
+    async def patch_walk(self, uuid, request): pass
+
 
 class IWalkPointDatabase(ABC):
     @abstractmethod

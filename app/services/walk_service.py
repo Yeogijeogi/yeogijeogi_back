@@ -53,3 +53,7 @@ class WalkService:
 
         return
 
+    async def patch_end(self, request = request_schema.PatchSaveWalkReqDTO):
+        uuid = self.auth.verify_token(self.token)
+        await MongoWalkDataBase().patch_walk(uuid = uuid, request=request)
+        return

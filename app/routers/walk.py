@@ -59,4 +59,10 @@ async def post_end(
     return response
 
 @router.patch("/end")
-async def patch_end
+async def patch_end(
+    request: request_schema.PatchSaveWalkReqDTO,
+    token=Depends(get_token),
+    auth=Depends(get_auth)
+):
+    response = await WalkService(token=token, auth=auth, chain=None).patch_end(request=request)
+    return response
