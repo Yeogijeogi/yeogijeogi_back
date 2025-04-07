@@ -45,3 +45,11 @@ class WalkService:
         uuid = self.auth.verify_token(self.token)
         response = await MongoWalkPointsDataBase().post_walk_point(uuid=uuid, request=reqeust)
         return response
+
+    async def post_walk_end(self):
+        uuid = self.auth.verify_token(self.token)
+        walk_data = await MongoWalkDataBase().get_walk(uuid = uuid)
+        walk_point_data = await MongoWalkPointsDataBase().get_walk_points(uuid = uuid, walk_id = walk_data.walk_id)
+
+        return
+

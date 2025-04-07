@@ -99,6 +99,13 @@ class MongoWalkDataBase(IWalkDatabase):
         except:
             raise HTTPException(status_code=500, detail="Database Insertion Failed")
 
+    async def get_walk(self, uuid):
+        try:
+            walk_data = await Walks.find_one(Walks.user_id==uuid)
+            return walk_data
+        except:
+            raise HTTPException(status_code=500, detail="Database Deletion Failed")
+
 class MongoWalkPointsDataBase(IWalkPointDatabase):
     async def create_walk_point(self, uuid, request):
         try:
@@ -121,6 +128,14 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
             }))
         except:
             raise HTTPException(status_code=500, detail="Database Insertion Failed")
+
+    async def get_walk_points(self, uuid, walk_id):
+        try:
+            walk_points_data = await WalkPoints.find_one(WalkPoints.walk_id==walk_id)
+            return walk_points_data
+        except:
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
 @asynccontextmanager

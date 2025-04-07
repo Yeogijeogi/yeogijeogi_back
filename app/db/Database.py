@@ -31,9 +31,16 @@ class IWalkDatabase(ABC):
     @abstractmethod
     async def post_start_walk(self, uuid, request): pass
 
+    @abstractmethod
+    async def get_walk(self, uuid): pass
+
+
 class IWalkPointDatabase(ABC):
     @abstractmethod
     async def create_walk_point(self, uuid, request): pass
 
     @abstractmethod
     async def post_walk_point(self, uuid, request): pass
+
+    @abstractmethod
+    async def get_walk_points(self, uuid, walk_id): pass

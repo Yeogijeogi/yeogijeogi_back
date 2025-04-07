@@ -51,7 +51,12 @@ async def walk_location(
     response = await WalkService(token=token, auth=auth, chain=None).walk_location(request = request)
     return response
 @router.post("/end")
-async def post_end()
+async def post_end(
+    token = Depends(get_token),
+    auth = Depends(get_auth)
+):
+    response = await WalkService(token=token, auth=auth, chain = None).post_walk_end()
+    return response
 
 @router.patch("/end")
 async def patch_end

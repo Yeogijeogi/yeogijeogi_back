@@ -18,3 +18,10 @@ class GetRecommendationResDTO(BaseModel):
 
 class PostStartWalkResDTO(BaseModel):
     walk_id: int = Field(..., examples=[0])
+
+class PostEndWalkResDTO(BaseModel):
+    start_name: str
+    end_name: str
+    distance: float
+    time: int
+    avg_speed: float
