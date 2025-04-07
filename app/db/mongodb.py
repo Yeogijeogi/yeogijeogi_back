@@ -4,7 +4,7 @@ from functools import lru_cache
 from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
-from beanie import init_beanie, PydanticObjectId
+from beanie import init_beanie
 from mongomock_motor import AsyncMongoMockClient
 from fastapi import FastAPI, HTTPException
 from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase
@@ -13,6 +13,8 @@ from app.db.models.users import Users
 from app.db.models.walks import Walks
 from app.db.models.walk_points import WalkPoints
 from app.db.models.walk_summary import WalkSummary
+from app.schemas.user import GetUserResDTO
+
 
 @lru_cache
 class MongoDB(Database):
@@ -49,9 +51,35 @@ class MongoUserDatabase(IUserDatabase):
 
 class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
     async def get_total_walk_summary(self, uuid):
-        # WalkSummary.aggregate()
-        pass
-
+        k = await Walks.aggregate(
+            [
+                {
+                    '$match': {
+                        'user_id.$id': uuid
+                    }
+                }, {
+                '$lookup': {
+                    'from': 'WalkSummary',
+                    'localField': '_id',
+                    'foreignField': 'walk_id.$id',
+                    'as': 'summary'
+                }
+            }, {
+                '$unwind': '$summary'
+            }, {
+                '$group': {
+                    '_id': '$_id',
+                    'walk_time': {
+                        '$sum': '$summary.time'
+                    },
+                    'walk_distance': {
+                        '$sum': '$summary.distance'
+                    }
+                }
+            }
+            ]
+        , projection_model=GetUserResDTO).to_list()
+        return k
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
 @asynccontextmanager
