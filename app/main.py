@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.routers import root, walk_root
+from app.routers import root, walk
 from app.routers import root
 from app.routers import user
 from app.routers import temp

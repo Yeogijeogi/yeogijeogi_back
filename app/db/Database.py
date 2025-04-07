@@ -26,3 +26,11 @@ class IUserDatabase(ABC):
 class IWalkSummaryDatabase(ABC):
     @abstractmethod
     async def get_total_walk_summary(self, uuid): pass
+
+class IWalkDatabase(ABC):
+    @abstractmethod
+    async def post_start_walk(self, uuid, request): pass
+
+class IWalkPointDatabase(ABC):
+    @abstractmethod
+    async def post_walk_point(self, uuid, request): pass

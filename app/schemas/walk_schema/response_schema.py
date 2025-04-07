@@ -15,3 +15,6 @@ class GetRecommendationResDTO(BaseModel):
     view: int | None = Field(default=0, examples=[0])
     difficulty: int | None = Field(default=0, examples=[0])
     rout : list[Coordinate]
+
+class PostStartWalkResDTO(BaseModel):
+    walk_id: int = Field(..., examples=[0])

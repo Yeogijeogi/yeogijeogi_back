@@ -7,7 +7,9 @@ from logging import info
 from beanie import init_beanie
 from mongomock_motor import AsyncMongoMockClient
 from fastapi import FastAPI, HTTPException
-from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase
+from datetime import datetime
+
+from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase, IWalkDatabase, IWalkPointDatabase
 
 from app.db.models.users import Users
 from app.db.models.walks import Walks
@@ -80,6 +82,33 @@ class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
             ]
         , projection_model=GetUserResDTO).to_list()
         return k
+
+class MongoWalkDataBase(IWalkDatabase):
+    async def post_start_walk(self, uuid, request):
+        try:
+            await Walks(
+                    id = uuid,
+                    user_id = request.user_id,
+                    start_name = request.start_name,
+                    end_name = request.end_name,
+                    end_address = request.end_address,
+                    img_url = request.img_url,
+                    created_at = datetime.now()
+                ).insert()
+        except:
+            raise HTTPException(status_code=500, detail="Database Insertion Failed")
+
+class MongoWalkPointsDataBase(IWalkPointDatabase):
+    async def post_walk_point(self, uuid, request):
+        try:
+            await WalkPoints(
+                    id = uuid,
+                    walk_id = request.walk_id,
+                    location = request.location,
+                    created_at = datetime.now()
+                ).insert()
+        except:
+            raise HTTPException(status_code=500, detail="Database Insertion Failed")
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
 @asynccontextmanager
