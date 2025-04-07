@@ -5,6 +5,7 @@ from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
 from beanie import init_beanie
+from beanie.operators import Push
 from mongomock_motor import AsyncMongoMockClient
 from fastapi import FastAPI, HTTPException
 from datetime import datetime
@@ -99,7 +100,7 @@ class MongoWalkDataBase(IWalkDatabase):
             raise HTTPException(status_code=500, detail="Database Insertion Failed")
 
 class MongoWalkPointsDataBase(IWalkPointDatabase):
-    async def post_walk_point(self, uuid, request):
+    async def create_walk_point(self, uuid, request):
         try:
             await WalkPoints(
                     id = uuid,
@@ -107,6 +108,17 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
                     location = request.location,
                     created_at = datetime.now()
                 ).insert()
+        except:
+            raise HTTPException(status_code=500, detail="Database Insertion Failed")
+
+    async def post_walk_point(self, uuid, request):
+        try:
+            walk_data = await WalkPoints.find_one(WalkPoints.walk_id == request.walk_id)
+            if not walk_data:
+                raise HTTPException(status_code=404, detail="WalkID Not Found")
+            await walk_data.update(Push({
+                WalkPoints.routes: {"$each": request.locations}
+            }))
         except:
             raise HTTPException(status_code=500, detail="Database Insertion Failed")
 

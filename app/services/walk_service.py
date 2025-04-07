@@ -37,6 +37,11 @@ class WalkService:
             "walk_id": walk_id,
             "location": request.location,
         }
-        await MongoWalkPointsDataBase().post_walk_point(uuid = uuid, request=walk_point_input)
+        await MongoWalkPointsDataBase().create_walk_point(uuid = uuid, request=walk_point_input)
 
         return walk_id
+
+    async def walk_location(self, request = request_schema.PostLocationReqDTO):
+        uuid = self.auth.verify_token(self.token)
+        response = await MongoWalkPointsDataBase().post_walk_point(uuid=uuid, request=reqeust)
+        return response

@@ -44,9 +44,12 @@ async def walk_start(
 
 @router.post("/location")
 async def walk_location(
-
+    request: request_schema.PostLocationReqDTO,
+    token = Depends(get_token),
+    auth = Depends(get_auth)
 ):
-
+    response = await WalkService(token=token, auth=auth, chain=None).walk_location(request = request)
+    return response
 @router.post("/end")
 async def post_end()
 
