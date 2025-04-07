@@ -67,7 +67,7 @@ class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
                 '$unwind': '$summary'
             }, {
                 '$group': {
-                    '_id': '$user_id',
+                    '_id': '$_id',
                     'walk_time': {
                         '$sum': '$summary.time'
                     },
@@ -203,7 +203,6 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
 @asynccontextmanager
 async def db_lifespan(app: FastAPI):
     db = MongoDB()
-    await db.connect_database()
     await db.check_status()
     info("Connected to database")
     yield
