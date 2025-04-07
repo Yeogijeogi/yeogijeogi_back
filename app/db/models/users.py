@@ -1,7 +1,9 @@
 from beanie import Document, Indexed
 from typing import Annotated
+from beanie import PydanticObjectId
+from pydantic import Field
 
 # TODO : uuid validator
 
 class Users(Document):
-    user_id:Annotated[str, Indexed(unique=True)] # firebase uuid
+    id: str = Field(alias="_id")
