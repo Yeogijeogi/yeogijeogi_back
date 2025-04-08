@@ -7,9 +7,9 @@ from typing import Optional
 # .env 파일 내부에 필요 환경변수 작성 필요 ( eg. FIREBASE_AUTH = "cred.json" )
 class Settings(BaseSettings):
     openai_api_key: str
-    firebase_auth: Optional[str] = "firebase_credentials.json"
-    mongo_uri: Optional[str] = None
-    mongo_database_name: Optional[str] = "test"
+    firebase_auth: str
+    mongo_uri: str
+    mongo_database_name: Optional[str]
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='allow')
     
 @lru_cache
