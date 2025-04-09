@@ -1,12 +1,15 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
-
+from bson import DBRef
+from bson.objectid import ObjectId
 from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
 from beanie import init_beanie
 from fastapi import FastAPI, HTTPException
-from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase
+from datetime import datetime
+from pydantic_extra_types.coordinate import Coordinate
+from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase, IWalkDatabase, IWalkPointDatabase
 
 from app.db.models.users import Users
 from app.db.models.walks import Walks
@@ -77,6 +80,124 @@ class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
         if not k:
             return GetUserResDTO(walk_time=0, walk_distance=0)
         return k[0]
+
+    async def patch_walk(self, request):
+        try:
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            ws = await WalkSummary.find_one(WalkSummary.walk_id.id == w.id)
+            ws.mood = request.mood
+            ws.difficulty = request.difficulty
+            ws.memo = request.memo
+            await ws.save()
+            return True
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+    async def create_walk_summary(self, request, time_diff, dist):
+        try:
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            ws = WalkSummary(
+                walk_id=w.id,
+                mood = 0,
+                difficulty=0,
+                memo = "",
+                time=time_diff,
+                distance=dist
+            )
+            await ws.insert()
+            return w.start_name, w.end_name
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+
+
+class MongoWalkDataBase(IWalkDatabase):
+    async def post_start_walk(self, uuid, request):
+        try:
+            u = await Users.find_one(Users.id == uuid)
+            w = Walks(
+                user_id = u,
+                start_name = request["start_name"],
+                end_name = request["end_name"],
+                end_address = request["end_address"],
+                img_url = request["img_url"],
+                created_at = datetime.now()
+            )
+            await w.insert()
+            return w.id
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Walk Database Insertion Failed")
+
+    async def get_walk(self, walk_id):
+        try:
+            walk_data = await Walks.find_one(Walks.id==walk_id)
+            return walk_data
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Deletion Failed")
+
+class MongoWalkPointsDataBase(IWalkPointDatabase):
+    async def create_walk_point(self, request):
+        try:
+
+            w = await Walks.find_one(Walks.id == request["walk_id"])
+            wp = WalkPoints(
+                walk_id=w.id,
+                location=(request["location"].longitude, request["location"].latitude),
+                created_at=datetime.now()
+            )
+            l = [wp]
+            await WalkPoints.insert_many(l)
+            return True
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+
+    async def post_walk_point(self, request):
+        try:
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            l = []
+            for data in request.routes:
+                wp = WalkPoints(
+                    walk_id=w.id,
+                    location=(data.longitude, data.latitude),
+                    created_at=datetime.now()
+                )
+                l.append(wp)
+            await WalkPoints.insert_many(l)
+            return True
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+    async def get_walk_points(self, walk_id):
+        try:
+            walk_points_data = await WalkPoints.find_one(WalkPoints.walk_id==walk_id)
+            return walk_points_data
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+    async def get_all_points(self, walk_id):
+        try:
+            walk_point_data_raw = await WalkPoints.get_motor_collection().find({
+                "walk_id.$id": ObjectId(walk_id)
+            }).sort("created_at").to_list(length=None)
+
+            walk_point_data = []
+            for data in walk_point_data_raw:
+                coordinates = data["location"]["coordinates"]
+                data["location"] = Coordinate(latitude=coordinates[1], longitude=coordinates[0])
+                walk_point_data.append(data)
+            return walk_point_data
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
 @asynccontextmanager
