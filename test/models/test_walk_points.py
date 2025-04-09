@@ -1,19 +1,34 @@
 from app.db.models.walk_points import WalkPoints
-import pytest_asyncio
-from pydantic_extra_types.coordinate import Coordinate
+from app.db.models.GeoJSON import GeoJSON
 import pytest
 from datetime import datetime
+from pydantic import ValidationError
+from bson.objectid import ObjectId
 
-
-def test_create_walk_points_success(insert_walk):
-    walk = insert_walk
+def test_create_walk_points_success(init_db):
     WalkPoints(
-        walk_id=walk.id,
-        location=Coordinate(0, 0),
+        walk_id=ObjectId(),
+        location=GeoJSON(coordinates=[0, 0]),
         created_at=datetime.now()
     )
     assert True
 
-@pytest.mark.skip(reason="not implemented")
-def test_create_walk_points_invalid_coordinates(init_db):
-    pass
+def test_create_geo_json_success():
+    GeoJSON(coordinates=[0, 0])
+    assert True
+
+def test_create_geo_json_invalid_coordinate_min_lat():
+    with pytest.raises(ValidationError):
+        GeoJSON(coordinates=[0, -181])
+
+def test_create_geo_json_invalid_coordinate_max_lat():
+    with pytest.raises(ValidationError):
+        GeoJSON(coordinates=[0, 181])
+
+def test_create_geo_json_invalid_coordinate_min_long():
+    with pytest.raises(ValidationError):
+        GeoJSON(coordinates=[-91, 0])
+
+def test_create_geo_json_invalid_coordinate_max_long():
+    with pytest.raises(ValidationError):
+        GeoJSON(coordinates=[91, 0])
