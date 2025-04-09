@@ -136,14 +136,14 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
         except:
             raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
 
-    async def post_walk_point(self, uuid, request):
+    async def post_walk_point(self, request):
         try:
-            w = await Walks.find_one(Walks.id == request["walk_id"])
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
             l = []
-            for data in request["location"]:
+            for data in request.routes:
                 wp = WalkPoints(
                     walk_id=w.id,
-                    location=(data["latitude"], data["longitude"]),
+                    location=(data.longitude, data.latitude),
                     created_at=datetime.now()
                 )
                 l.append(wp)

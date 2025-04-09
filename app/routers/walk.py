@@ -47,7 +47,13 @@ async def walk_start(
 ):
     response = await WalkService(token = token, auth = auth, chain = None).walk_start(request = request)
     return response_schema.PostStartWalkResDTO(walk_id = response)
-@router.post("/location")
+@router.post("/location", responses={
+    201: {"description": "success"},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
 async def walk_location(
     request: request_schema.PostLocationReqDTO,
     token = Depends(get_token),
