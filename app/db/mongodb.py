@@ -155,7 +155,6 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
                 location=GeoJson(coordinates=[request["location"].longitude, request["location"].latitude]),
                 created_at=datetime.now()
             )
-            print(wp.model_dump())
             l = [wp]
             await WalkPoints.insert_many(l)
             return True
