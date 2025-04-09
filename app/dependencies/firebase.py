@@ -1,10 +1,11 @@
+import os.path
+
 from functools import lru_cache
 from fastapi import HTTPException
 
 from firebase_admin import initialize_app, credentials, auth
 from app.core.config import get_settings
 from app.dependencies.Auth import Auth
-import requests
 
 import jwt
 
@@ -16,11 +17,12 @@ class FirebaseAuth(Auth):
     def __init__(self):
         super().__init__()
         settings = get_settings()
-        self.api_connected = False
-        if settings.firebase_auth:
-            self.api_connected = True
-            cred = credentials.Certificate(settings.firebase_auth)
-            initialize_app(cred)
+        if not settings.firebase_auth:
+            raise Exception("Firebase Credential Location not found in .env")
+        if not os.path.isfile(f"./{settings.firebase_auth}"):
+            raise Exception(f"Firebase Credential File not found in /app/{settings.firebase_auth}")
+        cred = credentials.Certificate(settings.firebase_auth)
+        initialize_app(cred)
 
     def verify_token(self, token):
         try:
