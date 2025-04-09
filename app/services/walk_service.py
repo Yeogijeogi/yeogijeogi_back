@@ -63,8 +63,8 @@ class WalkService:
             return R * c
 
         for i in range(len_data - 1):
-            lon1, lat1 = points[i]["location"].longitude, points[i]["location"].latitude
-            lon2, lat2 = points[i + 1]["location"].longitude, points[i + 1]["location"].latitude
+            lon1, lat1 = points[i]["location"]
+            lon2, lat2 = points[i + 1]["location"]
             dist += haversine(lat1, lon1, lat2, lon2)
 
         start_name, end_name = await MongoWalkSummaryDatabase().create_walk_summary(request, time_diff, dist)
