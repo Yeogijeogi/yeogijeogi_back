@@ -7,7 +7,7 @@ class PostStartWalkReqDTO(BaseModel):
     location: Coordinate
     end_name: str
     end_address: str
-    img: UploadFile | None = None
+    img_url: str #UploadFile | None = None
 
 class PostLocationReqDTO(BaseModel):
     walk_id: str

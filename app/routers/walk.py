@@ -33,15 +33,20 @@ async def chat_openai(
     response = await WalkService(token, auth, chain).recommend(latitude=latitude, longitude=longitude, walk_time=walk_time,view=view, difficulty=difficulty)
     return response
 
-@router.post("/start")
+@router.post("/start", responses={
+    201: { "model": response_schema.PostStartWalkResDTO, "description": "walk id"},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
 async def walk_start(
     request: request_schema.PostStartWalkReqDTO,
     token = Depends(get_token),
     auth=Depends(get_auth)
-) -> response_schema.PostStartWalkResDTO:
+):
     response = await WalkService(token = token, auth = auth, chain = None).walk_start(request = request)
     return response_schema.PostStartWalkResDTO(walk_id = response)
-
 @router.post("/location")
 async def walk_location(
     request: request_schema.PostLocationReqDTO,

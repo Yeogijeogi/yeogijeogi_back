@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
-
+from bson.objectid import ObjectId
 from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
@@ -87,17 +87,19 @@ class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
 class MongoWalkDataBase(IWalkDatabase):
     async def post_start_walk(self, uuid, request):
         try:
-            await Walks(
-                    id = uuid,
-                    user_id = request.user_id,
-                    start_name = request.start_name,
-                    end_name = request.end_name,
-                    end_address = request.end_address,
-                    img_url = request.img_url,
-                    created_at = datetime.now()
-                ).insert()
+            u = await Users.find_one(Users.id == uuid)
+            w = Walks(
+                user_id = u,
+                start_name = request["start_name"],
+                end_name = request["end_name"],
+                end_address = request["end_address"],
+                img_url = request["img_url"],
+                created_at = datetime.now()
+            )
+            await w.insert()
+            return w.id
         except:
-            raise HTTPException(status_code=500, detail="Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="Walk Database Insertion Failed")
 
     async def get_walk(self, uuid):
         try:
@@ -119,28 +121,36 @@ class MongoWalkDataBase(IWalkDatabase):
             raise HTTPException(status_code=500, detail="Database Connection Failed")
 
 class MongoWalkPointsDataBase(IWalkPointDatabase):
-    async def create_walk_point(self, uuid, request):
+    async def create_walk_point(self, request):
         try:
-            await WalkPoints(
-                    id = uuid,
-                    walk_id = request.walk_id,
-                    location = request.location,
-                    created_at = datetime.now()
-                ).insert()
+
+            w = await Walks.find_one(Walks.id == request["walk_id"])
+            wp = WalkPoints(
+                walk_id=w.id,
+                location=(request["location"].longitude, request["location"].latitude),
+                created_at=datetime.now()
+            )
+            l = [wp]
+            await WalkPoints.insert_many(l)
+            return True
         except:
-            raise HTTPException(status_code=500, detail="Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
 
     async def post_walk_point(self, uuid, request):
         try:
-            walk_data = await WalkPoints.find_one(WalkPoints.walk_id == request.walk_id)
-            if not walk_data:
-                raise HTTPException(status_code=404, detail="WalkID Not Found")
-            await walk_data.update(Push({
-                WalkPoints.routes: {"$each": request.locations}
-            }))
+            w = await Walks.find_one(Walks.id == request["walk_id"])
+            l = []
+            for data in request["location"]:
+                wp = WalkPoints(
+                    walk_id=w.id,
+                    location=(data["latitude"], data["longitude"]),
+                    created_at=datetime.now()
+                )
+                l.append(wp)
+            await WalkPoints.insert_many(l)
+            return True
         except:
-            raise HTTPException(status_code=500, detail="Database Insertion Failed")
-
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
     async def get_walk_points(self, uuid, walk_id):
         try:
             walk_points_data = await WalkPoints.find_one(WalkPoints.walk_id==walk_id)

@@ -40,7 +40,7 @@ class IWalkDatabase(ABC):
 
 class IWalkPointDatabase(ABC):
     @abstractmethod
-    async def create_walk_point(self, uuid, request): pass
+    async def create_walk_point(self, request): pass
 
     @abstractmethod
     async def post_walk_point(self, uuid, request): pass

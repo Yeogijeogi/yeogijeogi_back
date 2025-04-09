@@ -1,3 +1,4 @@
+from bson import ObjectId
 from pydantic import BaseModel, Field
 from app.schemas.walk_schema.base_schema import Coordinate, Image
 
@@ -17,7 +18,7 @@ class GetRecommendationResDTO(BaseModel):
     rout : list[Coordinate]
 
 class PostStartWalkResDTO(BaseModel):
-    walk_id: int = Field(..., examples=[0])
+    walk_id: str = Field(..., examples=["67f5be826814492ab754e6fe"])
 
 class PostEndWalkResDTO(BaseModel):
     start_name: str

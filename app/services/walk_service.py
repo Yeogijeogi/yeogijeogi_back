@@ -24,26 +24,24 @@ class WalkService:
     async def walk_start(self, request = request_schema.PostStartWalkReqDTO):
         uuid = self.auth.verify_token(self.token)
         walk_input = {
-            "user_id": self.token.user_id,
-            #"start_name": #네이버맵 사용
+            "user_id": uuid,
+            "start_name": "hihi",
             "end_name": request.end_name,
             "end_address": request.end_address,
-            "img": request.img
+            "img_url": request.img_url
         }
         walk_id = await MongoWalkDataBase().post_start_walk(uuid = uuid, request=walk_input)
-
         walk_point_input = {
-            "id": self.token.user_id,
             "walk_id": walk_id,
             "location": request.location,
         }
-        await MongoWalkPointsDataBase().create_walk_point(uuid = uuid, request=walk_point_input)
+        await MongoWalkPointsDataBase().create_walk_point(request=walk_point_input)
 
-        return walk_id
+        return str(walk_id)
 
     async def walk_location(self, request = request_schema.PostLocationReqDTO):
         uuid = self.auth.verify_token(self.token)
-        response = await MongoWalkPointsDataBase().post_walk_point(uuid=uuid, request=reqeust)
+        response = await MongoWalkPointsDataBase().post_walk_point(uuid=uuid, request=request)
         return response
 
     async def post_walk_end(self):
