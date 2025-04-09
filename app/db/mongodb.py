@@ -11,7 +11,7 @@ from app.db.models.users import Users
 from app.db.models.walks import Walks
 from app.db.models.walk_points import WalkPoints
 from app.db.models.walk_summary import WalkSummary
-from app.db.models.GeoJson import GeoJson
+from app.db.models.GeoJSON import GeoJSON
 from app.schemas.user import GetUserResDTO
 
 from beanie import BulkWriter
@@ -152,7 +152,7 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
             w = await Walks.find_one(Walks.id == request["walk_id"])
             wp = WalkPoints(
                 walk_id=w.id,
-                location=GeoJson(coordinates=[request["location"].longitude, request["location"].latitude]),
+                location=GeoJSON(coordinates=[request["location"].longitude, request["location"].latitude]),
                 created_at=datetime.now()
             )
             l = [wp]
@@ -169,7 +169,7 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
             for data in request.routes:
                 wp = WalkPoints(
                     walk_id=w.id,
-                    location=GeoJson(coordinates=[data.longitude, data.latitude]),
+                    location=GeoJSON(coordinates=[data.longitude, data.latitude]),
                     created_at=datetime.now()
                 )
                 l.append(wp)
