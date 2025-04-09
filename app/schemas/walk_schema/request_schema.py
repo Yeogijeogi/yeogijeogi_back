@@ -14,7 +14,9 @@ class PostLocationReqDTO(BaseModel):
     routes: list[Coordinate]
 
 class PatchSaveWalkReqDTO(BaseModel):
-    walk_id: int
+    walk_id: str
     mood: int
     difficulty: int
     memo: str
+class PostEndWalkReqDTO(BaseModel):
+    walk_id: str

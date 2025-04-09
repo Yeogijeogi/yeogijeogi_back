@@ -1,15 +1,15 @@
 from contextlib import asynccontextmanager
 from functools import lru_cache
+from bson import DBRef
 from bson.objectid import ObjectId
 from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
 from logging import info
 from beanie import init_beanie
-from beanie.operators import Push
 from mongomock_motor import AsyncMongoMockClient
 from fastapi import FastAPI, HTTPException
 from datetime import datetime
-
+from pydantic_extra_types.coordinate import Coordinate
 from app.db.Database import Database, IUserDatabase, IWalkSummaryDatabase, IWalkDatabase, IWalkPointDatabase
 
 from app.db.models.users import Users
@@ -44,13 +44,17 @@ class MongoUserDatabase(IUserDatabase):
     async def create_user(self, uuid):
         try:
             u = await Users(id=uuid).insert()
-        except: raise HTTPException(status_code=500, detail="Database Insertion Failed")
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Insertion Failed")
 
     async def delete_user(self, uuid):
         try:
             u = await Users.find_one(Users.id==uuid)
             await u.delete()
-        except: raise HTTPException(status_code=500, detail="Database Deletion Failed")
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Deletion Failed")
 
 class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
     async def get_total_walk_summary(self, uuid):
@@ -84,6 +88,39 @@ class MongoWalkSummaryDatabase(IWalkSummaryDatabase):
         , projection_model=GetUserResDTO).to_list()
         return k
 
+    async def patch_walk(self, request):
+        try:
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            ws = await WalkSummary.find_one(WalkSummary.walk_id.id == w.id)
+            ws.mood = request.mood
+            ws.difficulty = request.difficulty
+            ws.memo = request.memo
+            await ws.save()
+            return True
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+    async def create_walk_summary(self, request, time_diff, dist):
+        try:
+            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            ws = WalkSummary(
+                walk_id=w.id,
+                mood = 0,
+                difficulty=0,
+                memo = "",
+                time=time_diff,
+                distance=dist
+            )
+            await ws.insert()
+            return w.start_name, w.end_name
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+
+
 class MongoWalkDataBase(IWalkDatabase):
     async def post_start_walk(self, uuid, request):
         try:
@@ -98,27 +135,17 @@ class MongoWalkDataBase(IWalkDatabase):
             )
             await w.insert()
             return w.id
-        except:
+        except Exception as e:
+            print("Error:", e)
             raise HTTPException(status_code=500, detail="Walk Database Insertion Failed")
 
-    async def get_walk(self, uuid):
+    async def get_walk(self, walk_id):
         try:
-            walk_data = await Walks.find_one(Walks.user_id==uuid)
+            walk_data = await Walks.find_one(Walks.id==walk_id)
             return walk_data
-        except:
+        except Exception as e:
+            print("Error:", e)
             raise HTTPException(status_code=500, detail="Database Deletion Failed")
-
-    async def patch_walk(self, uuid, request):
-        try:
-            walk_data = await Walks.find_one(Walks.id == request.walk_id)
-            if not walk_data:
-                raise HTTPException(status_code=404, detail="Walk data not found")
-
-            walk_data.end_name = request.end_name
-            walk_data.end_address = request.end_address
-            await walk_data.save()
-        except:
-            raise HTTPException(status_code=500, detail="Database Connection Failed")
 
 class MongoWalkPointsDataBase(IWalkPointDatabase):
     async def create_walk_point(self, request):
@@ -133,7 +160,8 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
             l = [wp]
             await WalkPoints.insert_many(l)
             return True
-        except:
+        except Exception as e:
+            print("Error:", e)
             raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
 
     async def post_walk_point(self, request):
@@ -149,14 +177,33 @@ class MongoWalkPointsDataBase(IWalkPointDatabase):
                 l.append(wp)
             await WalkPoints.insert_many(l)
             return True
-        except:
+        except Exception as e:
+            print("Error:", e)
             raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
-    async def get_walk_points(self, uuid, walk_id):
+    async def get_walk_points(self, walk_id):
         try:
             walk_points_data = await WalkPoints.find_one(WalkPoints.walk_id==walk_id)
             return walk_points_data
-        except:
+        except Exception as e:
+            print("Error:", e)
             raise HTTPException(status_code=500, detail="Database Connection Failed")
+
+    async def get_all_points(self, walk_id):
+        try:
+            walk_point_data_raw = await WalkPoints.get_motor_collection().find({
+                "walk_id.$id": ObjectId(walk_id)
+            }).sort("created_at").to_list(length=None)
+
+            walk_point_data = []
+            for data in walk_point_data_raw:
+                coordinates = data["location"]["coordinates"]
+                data["location"] = Coordinate(latitude=coordinates[1], longitude=coordinates[0])
+                walk_point_data.append(data)
+            return walk_point_data
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
 
 
 # fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리

@@ -61,15 +61,28 @@ async def walk_location(
 ):
     response = await WalkService(token=token, auth=auth, chain=None).walk_location(request = request)
     return response
-@router.post("/end")
+@router.post("/end", responses={
+    201: { "model": response_schema.PostEndWalkResDTO, "description": "walk id, end_name, distance, time, avg_speed"},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
 async def post_end(
+    request: request_schema.PostEndWalkReqDTO,
     token = Depends(get_token),
     auth = Depends(get_auth)
 ):
-    response = await WalkService(token=token, auth=auth, chain = None).post_walk_end()
+    response = await WalkService(token=token, auth=auth, chain = None).post_walk_end(request)
     return response
 
-@router.patch("/end")
+@router.patch("/end", responses={
+    201: {"description": "success"},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
 async def patch_end(
     request: request_schema.PatchSaveWalkReqDTO,
     token=Depends(get_token),

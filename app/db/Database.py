@@ -27,15 +27,18 @@ class IWalkSummaryDatabase(ABC):
     @abstractmethod
     async def get_total_walk_summary(self, uuid): pass
 
+    @abstractmethod
+    async def create_walk_summary(self, request, time_diff, dist): pass
+
+    @abstractmethod
+    async def patch_walk(self, request): pass
+
 class IWalkDatabase(ABC):
     @abstractmethod
     async def post_start_walk(self, uuid, request): pass
 
     @abstractmethod
-    async def get_walk(self, uuid): pass
-
-    @abstractmethod
-    async def patch_walk(self, uuid, request): pass
+    async def get_walk(self, walk_id): pass
 
 
 class IWalkPointDatabase(ABC):
@@ -46,4 +49,7 @@ class IWalkPointDatabase(ABC):
     async def post_walk_point(self, request): pass
 
     @abstractmethod
-    async def get_walk_points(self, uuid, walk_id): pass
+    async def get_walk_points(self, walk_id): pass
+
+    @abstractmethod
+    async def get_all_points(self, walk_id): pass

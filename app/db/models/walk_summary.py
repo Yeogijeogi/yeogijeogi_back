@@ -7,6 +7,6 @@ class WalkSummary(Document):
     walk_id: Link[Walks]
     distance: float
     time: int # 총 산책시간(분)
-    difficulty: int # -5 ~ 5
-    mood: int # -5 ~ 5
-    memo: str
+    difficulty: int | None =  None# -5 ~ 5
+    mood: int | None = None # -5 ~ 5
+    memo: str | None = None
