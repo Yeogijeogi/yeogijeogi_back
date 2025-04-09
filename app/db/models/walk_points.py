@@ -8,7 +8,7 @@ from app.db.models.GeoJson import GeoJson
 WalkPoints 객체 생성 예시
 WalkPoints(
     walk_id=Walks 객체 id,
-    location=(lat, long),
+    location=GeoJson(coordinate=[longitude, latitude]),
     created_at=datetime.now()
 )
 '''
