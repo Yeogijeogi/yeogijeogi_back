@@ -1,7 +1,7 @@
-from fastapi import Depends, HTTPException, Response
-from app.dependencies.openai_dependency import get_openai_client
 from app.schemas.walk_schema import request_schema, response_schema
-from app.db.mongodb import MongoWalkDataBase, MongoWalkPointsDataBase, MongoWalkSummaryDatabase
+from app.db.dao.MongoWalkSummaryDAO import MongoWalkSummaryDAO
+from app.db.dao.MongoWalkDAO import MongoWalkDataBase
+from app.db.dao.MongoWalkPointsDAO import MongoWalkPointsDataBase
 
 from math import radians, sin, cos, sqrt, atan2
 
@@ -67,7 +67,7 @@ class WalkService:
             lon2, lat2 = points[i + 1]["location"]
             dist += haversine(lat1, lon1, lat2, lon2)
 
-        start_name, end_name = await MongoWalkSummaryDatabase().create_walk_summary(request, time_diff, dist)
+        start_name, end_name = await MongoWalkSummaryDAO().create_walk_summary(request, time_diff, dist)
 
         return response_schema.PostEndWalkResDTO(
             start_name=start_name,
@@ -77,7 +77,6 @@ class WalkService:
             avg_speed=dist/time_diff if time_diff != 0 else 0
         )
 
-
     async def patch_end(self, request = request_schema.PatchSaveWalkReqDTO):
-        await MongoWalkSummaryDatabase().patch_walk(request)
+        await MongoWalkSummaryDAO().patch_walk(request)
         return True

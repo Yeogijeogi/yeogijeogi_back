@@ -1,11 +1,8 @@
-from fastapi import APIRouter, Depends, Query, HTTPException, Response
-from fastapi.responses import JSONResponse
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Depends, Query, HTTPException
 # from app.dependencies.firebase import get_auth
 from app.dependencies.openai_dependency import get_openai_client
 from app.schemas.walk_schema import request_schema, response_schema
 from app.dependencies.firebase import get_auth
-from app.db.mongodb import MongoUserDatabase, MongoWalkSummaryDatabase
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.services.walk_service import WalkService
 
