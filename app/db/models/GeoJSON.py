@@ -1,11 +1,11 @@
 from typing import List
-from pydantic import BaseModel
-from pydantic import field_validator
-from pydantic import Field
+from pydantic import BaseModel, field_validator, ConfigDict
 
 class GeoJSON(BaseModel):
     type:str = "Point"
     coordinates:List[float] # long, lat
+
+    model_config = ConfigDict(from_attributes=True)
 
     @field_validator('coordinates', mode='after')
     @classmethod

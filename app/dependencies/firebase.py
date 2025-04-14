@@ -5,7 +5,6 @@ from fastapi import HTTPException
 
 from firebase_admin import initialize_app, credentials, auth
 from app.core.config import get_settings
-from app.dependencies.Auth import Auth
 
 import jwt
 
@@ -13,7 +12,7 @@ def check_token(token):
     return jwt.decode(token, "secret", algorithms=["HS256"])
 
 @lru_cache
-class FirebaseAuth(Auth):
+class FirebaseAuth():
     def __init__(self):
         super().__init__()
         settings = get_settings()
