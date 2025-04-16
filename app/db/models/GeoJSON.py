@@ -11,8 +11,8 @@ class GeoJSON(BaseModel):
     @classmethod
     def validate_coordinate(cls, coordinates:List[float]) -> List[float]:
         longitude, latitude = coordinates
-        if longitude < -90: raise ValueError("the first element(longitude cannot be smaller than -90")
-        if longitude > 90: raise ValueError("the first element(longitude cannot be bigger than 90")
-        if latitude < -180: raise ValueError("the second element(longitude cannot be smaller than -180")
-        if latitude > 180: raise ValueError("the second element(longitude cannot be bigger than 180")
+        if longitude < -180: raise ValueError("the first element(longitude cannot be smaller than -90")
+        if longitude > 180: raise ValueError("the first element(longitude cannot be bigger than 90")
+        if latitude < -90: raise ValueError("the second element(longitude cannot be smaller than -180")
+        if latitude > 90: raise ValueError("the second element(longitude cannot be bigger than 180")
         return coordinates
