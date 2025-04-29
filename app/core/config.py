@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     firebase_auth: str
     mongo_uri: str
     mongo_database_name: Optional[str]
+    tmap_app_key: str
+    naver_client_id: str
+    naver_client_secret: str
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding='utf-8', extra='allow')
     
 @lru_cache
