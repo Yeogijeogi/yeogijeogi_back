@@ -24,7 +24,7 @@ async def get_course_detail_by_walk_id(
         course_service:CourseService = Depends(get_course_service)):
     return await course_service.get_course_detail(walk_id)
 
-@router.delete("/delete")
+@router.delete("")
 async def delete_course_by_walk_id(
         request:DeleteCourseReqDTO,
         course_service:CourseService = Depends(get_course_service)):
