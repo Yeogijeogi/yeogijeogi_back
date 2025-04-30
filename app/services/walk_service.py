@@ -50,7 +50,8 @@ class WalkService:
             dist, time = 0, 0
             for feature in route_response['features']:
                 if 'geometry' in feature and 'type' in feature['geometry'] and feature['geometry']['type'] == 'LineString':
-                    route_list.extend(feature['geometry']['coordinates'])
+                    for route in feature['geometry']['coordinates']:
+                        route_list.append({"latitude": route[1], "longitude": route[0]})
                     dist += feature['properties']['distance']
                     time += feature['properties']['time']
 
