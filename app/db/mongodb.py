@@ -1,11 +1,8 @@
-from contextlib import asynccontextmanager
 from functools import lru_cache
 
 from app.core.config import get_settings
 from motor.motor_asyncio import AsyncIOMotorClient
-from logging import info
 from beanie import init_beanie
-from fastapi import FastAPI
 
 from app.db.models.users import Users
 from app.db.models.walks import Walks
@@ -33,12 +30,3 @@ class MongoDB(IDatabase):
         else:
             return True
 
-# fastapi lifespan 방식 서버 실행시 초기화 및 종료시 자동 정리
-@asynccontextmanager
-async def db_lifespan(app: FastAPI):
-    db = MongoDB()
-    await db.connect_database()
-    await db.check_status()
-    info("Connected to database")
-    yield
-    db.get_client().close()
