@@ -11,7 +11,6 @@ class GetCourseResDTO(BaseModel):
     time: int
 
 class GetCourseDetailResDTO(BaseModel):
-    img_url: AnyUrl
     mood: int
     difficulty: int
     memo:str

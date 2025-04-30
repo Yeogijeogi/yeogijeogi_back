@@ -8,7 +8,6 @@ from app.schemas.course_schema.base_schema import CourseInfo
 
 def course_info_to_GetCourseDetailDto(total_walk_info: CourseInfo) -> GetCourseDetailResDTO:
     return GetCourseDetailResDTO(
-        img_url=total_walk_info.img_url,
         mood=total_walk_info.walk_summary.mood,
         difficulty=total_walk_info.walk_summary.difficulty,
         memo=total_walk_info.walk_summary.memo

@@ -9,7 +9,6 @@ class CourseInfo(BaseModel):
     start_name: str
     end_name: str
     end_address: str
-    img_url: AnyUrl
     created_at: datetime
     last_point: WalkPoints
     walk_summary: WalkSummary

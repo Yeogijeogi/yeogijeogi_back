@@ -75,7 +75,6 @@ class WalkService:
             "start_name": "hihi",
             "end_name": request.end_name,
             "end_address": request.end_address,
-            "img_url": request.img_url
         }
         walk_id = await MongoWalkDataBase().post_start_walk(uuid = uuid, request=walk_input)
         walk_point_input = {
