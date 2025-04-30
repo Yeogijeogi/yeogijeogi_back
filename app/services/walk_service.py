@@ -2,8 +2,13 @@ from app.schemas.walk_schema import request_schema, response_schema
 from app.db.dao.MongoWalkSummaryDAO import MongoWalkSummaryDAO
 from app.db.dao.MongoWalkDAO import MongoWalkDataBase
 from app.db.dao.MongoWalkPointsDAO import MongoWalkPointsDataBase
+from app.core.config import get_settings
 
 from math import radians, sin, cos, sqrt, atan2
+import json
+import requests
+
+tmap_address_list = ['city_do', 'gu_gun', 'eup_myun', 'ri', 'legalDong', 'adminDong','buildingName', 'buildingDong']
 
 class WalkService:
     def __init__(self, auth, token, chain) -> None:
@@ -13,14 +18,54 @@ class WalkService:
 
     # 채팅 함수
     async def recommend(self, latitude: float, longitude: float, walk_time: int, view: int, difficulty: int):
+        tmap_app_key = get_settings().tmap_app_key
+        start_response = requests.get(
+            url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
+        ).json()
+        start_location = start_response["addressInfo"]["fullAddress"] + " " + start_response["addressInfo"]["buildingName"]
+
         recom_response = await self.chain.ainvoke({
-            "latitude": latitude,
-            "longitude": longitude,
+            "start_location": start_location,
             "walk_time": walk_time,
             "view": view,
             "difficulty": difficulty
         })
-        return recom_response
+        json_response = json.loads(recom_response.replace("\\", ""))
+        response_list = []
+        for dest, i in zip(json_response['destinations'], [0, 1, 2]):
+            dest_response = requests.get(
+                url=f"https://apis.openapi.sk.com/tmap/geo/fullAddrGeo?version=1&fullAddr={dest['name'] + ' ' + dest['address']}&appKey={tmap_app_key}",
+            ).json()
+            route_response = requests.post(f"https://apis.openapi.sk.com/tmap/routes?version=1&appKey={tmap_app_key}",
+                                     data={
+                                        "startX": longitude,
+                                        "startY": latitude,
+                                        "endX": dest_response['coordinateInfo']['coordinate'][0]["lon"] if dest_response['coordinateInfo']['coordinate'][0]["lon"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLon"],
+                                        "endY": dest_response["coordinateInfo"]['coordinate'][0]['lat'] if dest_response['coordinateInfo']['coordinate'][0]["lat"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLat"],
+                                        "startName": start_location,
+                                        "endName": dest['address'] + " " + dest['name'],
+                                     }
+                                     ).json()
+            route_list = []
+            dist, time = 0, 0
+            for feature in route_response['features']:
+                if 'geometry' in feature and 'type' in feature['geometry'] and feature['geometry']['type'] == 'LineString':
+                    for route in feature['geometry']['coordinates']:
+                        route_list.append({"latitude": route[1], "longitude": route[0]})
+                    dist += feature['properties']['distance']
+                    time += feature['properties']['time']
+
+            dest_info = {
+                "location": route_list[-1],
+                "name":dest['name'],
+                "address": dest['address'],
+                "distance":dist,
+                "walks":dist//60,
+                "time":time,
+                "routes": route_list
+            }
+            response_list.append(dest_info)
+        return response_list
     
     #산책 시작 서비스
     async def walk_start(self, request = request_schema.PostStartWalkReqDTO):

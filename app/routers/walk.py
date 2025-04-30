@@ -16,7 +16,13 @@ router = APIRouter(
     prefix="/walk",
     tags=["walk"]
 )
-@router.get("/recommend")
+@router.get("/recommend", responses={
+    200: { "model": response_schema.GetRecommendationResDTO},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
 async def chat_openai(
     latitude: float = Query(...),
     longitude: float = Query(...),

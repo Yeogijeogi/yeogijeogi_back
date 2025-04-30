@@ -1,8 +1,8 @@
 from pydantic import BaseModel, Field, HttpUrl, ConfigDict
 
 class Coordinate(BaseModel):
-    latitude: float = Field(examples=[127.029230599])
-    longitude: float = Field(examples=[37.586331295])
+    latitude: float = Field(examples=[37.586331295])
+    longitude: float = Field(examples=[127.029230599])
 
 class Image(BaseModel):
     url: HttpUrl
