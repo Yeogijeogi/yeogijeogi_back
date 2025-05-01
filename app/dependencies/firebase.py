@@ -25,4 +25,6 @@ class FirebaseStorage:
         postfix = ".png"
         bucket = storage.bucket()
         blob = bucket.get_blob(prefix + walk_id + postfix)
-        blob.delete()
+        if blob:
+            # only when blob exists
+            blob.delete()
