@@ -4,7 +4,8 @@ from fastapi import UploadFile
 
 
 class PostStartWalkReqDTO(BaseModel):
-    location: Coordinate
+    start_location: Coordinate
+    start_name: str
     end_name: str
     end_address: str
 

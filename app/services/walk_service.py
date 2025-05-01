@@ -72,14 +72,14 @@ class WalkService:
         uuid = self.auth.verify_token(self.token)
         walk_input = {
             "user_id": uuid,
-            "start_name": "hihi",
+            "start_name": request.start_name,
             "end_name": request.end_name,
             "end_address": request.end_address,
         }
         walk_id = await MongoWalkDataBase().post_start_walk(uuid = uuid, request=walk_input)
         walk_point_input = {
             "walk_id": walk_id,
-            "location": request.location,
+            "location": request.start_location,
         }
         await MongoWalkPointsDataBase().create_walk_point(request=walk_point_input)
 
