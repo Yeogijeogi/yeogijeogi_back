@@ -17,7 +17,6 @@ class MongoWalkDataBase(IWalkDAO):
                 start_name = request["start_name"],
                 end_name = request["end_name"],
                 end_address = request["end_address"],
-                img_url = request["img_url"],
                 created_at = datetime.now()
             )
             await w.insert()
