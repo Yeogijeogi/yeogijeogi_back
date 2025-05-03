@@ -22,7 +22,7 @@ class WalkService:
         start_response = requests.get(
             url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
         ).json()
-        start_location = start_response["addressInfo"]["fullAddress"] + " " + start_response["addressInfo"]["buildingName"]
+        start_location = start_response["addressInfo"]["fullAddress"] if start_response["addressInfo"]["buildingName"] == "" else start_response["addressInfo"]["fullAddress"] + " " + start_response["addressInfo"]["buildingName"]
 
         recom_response = await self.chain.ainvoke({
             "start_location": start_location,
@@ -57,6 +57,7 @@ class WalkService:
 
             dest_info = {
                 "location": route_list[-1],
+                "start_name": start_location,
                 "name":dest['name'],
                 "address": dest['address'],
                 "distance":dist,
@@ -72,14 +73,14 @@ class WalkService:
         uuid = self.auth.verify_token(self.token)
         walk_input = {
             "user_id": uuid,
-            "start_name": "hihi",
+            "start_name": request.start_name,
             "end_name": request.end_name,
             "end_address": request.end_address,
         }
         walk_id = await MongoWalkDataBase().post_start_walk(uuid = uuid, request=walk_input)
         walk_point_input = {
             "walk_id": walk_id,
-            "location": request.location,
+            "location": request.start_location,
         }
         await MongoWalkPointsDataBase().create_walk_point(request=walk_point_input)
 
