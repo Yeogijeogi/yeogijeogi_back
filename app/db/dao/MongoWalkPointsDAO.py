@@ -16,8 +16,7 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
             w = await Walks.find_one(Walks.id == request["walk_id"])
             wp = WalkPoints(
                 walk_id=w.id,
-                location=GeoJSON(coordinates=[request["location"].longitude, request["location"].latitude]),
-                created_at=datetime.now()
+                location=GeoJSON(coordinates=[request["location"].longitude, request["location"].latitude])
             )
             l = [wp]
             await WalkPoints.insert_many(l)
@@ -33,8 +32,7 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
             for data in request.routes:
                 wp = WalkPoints(
                     walk_id=w.id,
-                    location=GeoJSON(coordinates=[data.longitude, data.latitude]),
-                    created_at=datetime.now()
+                    location=GeoJSON(coordinates=[data.longitude, data.latitude])
                 )
                 l.append(wp)
             await WalkPoints.insert_many(l)
@@ -54,7 +52,7 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
         try:
             walk_point_data_raw = await WalkPoints.get_motor_collection().find({
                 "walk_id.$id": ObjectId(walk_id)
-            }).sort("created_at").to_list(length=None)
+            }).sort("id").to_list(length=None)
 
             walk_point_data = []
             for data in walk_point_data_raw:

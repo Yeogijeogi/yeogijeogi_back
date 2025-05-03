@@ -9,6 +9,7 @@ from app.core.config import get_settings
 from math import radians, sin, cos, sqrt, atan2
 import json
 import requests
+import datetime
 
 tmap_address_list = ['city_do', 'gu_gun', 'eup_myun', 'ri', 'legalDong', 'adminDong','buildingName', 'buildingDong']
 
@@ -102,9 +103,12 @@ class WalkService:
     async def post_walk_end(self, request):
         uuid = self.auth.verify_token(self.token)
         points = await MongoWalkPointsDataBase().get_all_points(walk_id=request.walk_id)
+        walk_info = await MongoWalkDataBase().get_walk(walk_id = request.walk_id)
+
         len_data = len(points)
-        time_diff = points[len_data - 1]["created_at"] - points[0]["created_at"]
-        time_diff = time_diff.total_seconds() // 60
+        time_diff = datetime.datetime.now() - walk_info.created_at
+        time_diff = int(time_diff.total_seconds() // 60)
+
         dist = 0
 
         def haversine(lat1, lon1, lat2, lon2):
