@@ -6,6 +6,7 @@ from app.db.models.users import Users
 from app.db.models.walks import Walks
 
 from app.db.interface.IWalkDAO import IWalkDAO
+from bson import ObjectId
 
 
 class MongoWalkDataBase(IWalkDAO):
@@ -27,7 +28,7 @@ class MongoWalkDataBase(IWalkDAO):
 
     async def get_walk(self, walk_id):
         try:
-            walk_data = await Walks.find_one(Walks.id==walk_id)
+            walk_data = await Walks.find_one(Walks.id==ObjectId(walk_id))
             return walk_data
         except Exception as e:
             print("Error:", e)

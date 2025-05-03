@@ -17,4 +17,3 @@ class WalkPoints(Document):
     _id: BeanieObjectId # mongodb 기본 id
     walk_id: Link[Walks]
     location: Annotated[GeoJSON, Indexed(index_type="2dsphere")]
-    created_at: datetime # 타임스탬프
