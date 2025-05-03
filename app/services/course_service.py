@@ -4,6 +4,7 @@ from app.db.interface.IUserDAO import IUserDAO
 from app.schemas.course_schema.response_schema import GetCourseDetailResDTO, GetCourseResDTO
 from app.schemas.walk_schema.base_schema import Coordinate
 from app.schemas.course_schema.base_schema import CourseInfo
+from app.dependencies.firebase import FirebaseStorage
 
 
 def course_info_to_GetCourseDetailDto(total_walk_info: CourseInfo) -> GetCourseDetailResDTO:
@@ -53,5 +54,6 @@ class CourseService:
 
     @check_user_exists
     async def delete_course(self, walk_id: str) -> bool:
+        FirebaseStorage.remove_image_by_walk_id(walk_id)
         return await self.course_database.delete_course_by_walk_id(self.user_database.user_id, walk_id)
 
