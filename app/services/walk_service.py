@@ -45,47 +45,56 @@ class WalkService:
             "difficulty": difficulty
         })
         json_response = json.loads(recom_response.replace("\\", ""))
+        #print("json_response", json_response)
         response_list = []
         for dest, i in zip(json_response['destinations'], [0, 1, 2]):
             dest_response = requests.get(
                 url=f"https://apis.openapi.sk.com/tmap/geo/fullAddrGeo?version=1&fullAddr={dest['name'] + ' ' + dest['address']}&appKey={tmap_app_key}",
             ).json()
-            route_response = requests.post(f"https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1",
-                                           headers={'appKey': tmap_app_key},
-                                           data={
-                                               "startX": longitude,
-                                               "startY": latitude,
-                                               "endX": dest_response['coordinateInfo']['coordinate'][0]["lon"] if dest_response['coordinateInfo']['coordinate'][0]["lon"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLon"],
-                                               "endY": dest_response["coordinateInfo"]['coordinate'][0]['lat'] if dest_response['coordinateInfo']['coordinate'][0]["lat"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLat"],
-                                               "startName": start_location,
-                                               "endName": dest['address'] + " " + dest['name'],
-                                           }
-                                     ).json()
-            route_list = []
-            dist = route_response["features"][0]["properties"]["totalDistance"]
-            time = route_response["features"][0]["properties"]["totalTime"]
-            for j in range(len(route_response["features"])):
-                cur_route = route_response["features"][j]
-                if cur_route["geometry"]["type"] == "Point":
-                    route_list.append({
-                        "latitude": cur_route["geometry"]["coordinates"][1],
-                        "longitude": cur_route["geometry"]["coordinates"][0]}
-                    )
+            #print("dest_response", dest_response)
+            if "error" in dest_response:
+                raise HTTPException(status_code=501, detail=dest_response['error'])
+            else:
+                route_response = requests.post(f"https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1",
+                                               headers={'appKey': tmap_app_key},
+                                               data={
+                                                   "startX": longitude,
+                                                   "startY": latitude,
+                                                   "endX": dest_response['coordinateInfo']['coordinate'][0]["lon"] if dest_response['coordinateInfo']['coordinate'][0]["lon"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLon"],
+                                                   "endY": dest_response["coordinateInfo"]['coordinate'][0]['lat'] if dest_response['coordinateInfo']['coordinate'][0]["lat"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLat"],
+                                                   "startName": start_location,
+                                                   "endName": dest['address'] + " " + dest['name'],
+                                               }
+                                         ).json()
+                #print("route_response", route_response)
+                if "error" in route_response:
+                    raise HTTPException(status_code=501, detail=route_response['error'])
                 else:
-                    for route in cur_route["geometry"]["coordinates"]:
-                        route_list.append({"latitude": route[1], "longitude": route[0]})
+                    route_list = []
+                    dist = route_response["features"][0]["properties"]["totalDistance"]
+                    time = route_response["features"][0]["properties"]["totalTime"]
+                    for j in range(len(route_response["features"])):
+                        cur_route = route_response["features"][j]
+                        if cur_route["geometry"]["type"] == "Point":
+                            route_list.append({
+                                "latitude": cur_route["geometry"]["coordinates"][1],
+                                "longitude": cur_route["geometry"]["coordinates"][0]}
+                            )
+                        else:
+                            for route in cur_route["geometry"]["coordinates"]:
+                                route_list.append({"latitude": route[1], "longitude": route[0]})
 
-            dest_info = {
-                "location": route_list[-1],
-                "start_name": start_location,
-                "name":dest['name'],
-                "address": dest['address'],
-                "distance":dist,
-                "walks":dist//0.78,
-                "time":time//60,
-                "routes": route_list
-            }
-            response_list.append(dest_info)
+                    dest_info = {
+                        "location": route_list[-1],
+                        "start_name": start_location,
+                        "name":dest['name'],
+                        "address": dest['address'],
+                        "distance":dist,
+                        "walks":dist//0.78,
+                        "time":time//60,
+                        "routes": route_list
+                    }
+                    response_list.append(dest_info)
         return response_list
     
     #산책 시작 서비스
