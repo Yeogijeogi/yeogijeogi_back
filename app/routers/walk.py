@@ -33,7 +33,7 @@ async def chat_openai(
     token=Depends(get_token),
     auth=Depends(get_auth)
 ):
-    response = await WalkService(token, auth, chain).recommend(latitude=latitude, longitude=longitude, walk_time=walk_time,view=view, difficulty=difficulty)
+    response = await WalkService(auth, token, chain).recommend(latitude=latitude, longitude=longitude, walk_time=walk_time,view=view, difficulty=difficulty)
     return response
 
 @router.post("/start", responses={
