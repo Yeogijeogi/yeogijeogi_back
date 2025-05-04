@@ -1,10 +1,13 @@
 from pyexpat import features
 
+from app.db.dao.MongoUserDAO import MongoUserDAO
 from app.schemas.walk_schema import request_schema, response_schema
 from app.db.dao.MongoWalkSummaryDAO import MongoWalkSummaryDAO
 from app.db.dao.MongoWalkDAO import MongoWalkDataBase
 from app.db.dao.MongoWalkPointsDAO import MongoWalkPointsDataBase
 from app.core.config import get_settings
+from fastapi import HTTPException
+from app.dependencies.auth import get_uuid
 
 from math import radians, sin, cos, sqrt, atan2
 import json
@@ -21,6 +24,14 @@ class WalkService:
 
     # 채팅 함수
     async def recommend(self, latitude: float, longitude: float, walk_time: int, view: int, difficulty: int):
+
+        #TODO : interface에 의존하게 수정해야함 일단 hotfix
+        uuid = self.auth.verify_token(self.token)
+        mongo_user_dao = MongoUserDAO(uuid)
+        if not await mongo_user_dao.check_user_exists():
+            raise HTTPException(status_code=401, detail="Authentication Failed")
+
+
         tmap_app_key = get_settings().tmap_app_key
         start_response = requests.get(
             url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
