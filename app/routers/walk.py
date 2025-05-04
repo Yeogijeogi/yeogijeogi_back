@@ -4,6 +4,8 @@ from app.dependencies.openai_dependency import get_openai_client
 from app.schemas.walk_schema import request_schema, response_schema
 from app.dependencies.firebase import get_auth
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+from app.schemas.walk_schema.response_schema import GetWalkEndDTO
 from app.services.walk_service import WalkService
 
 security = HTTPBearer(auto_error=False)
@@ -11,6 +13,9 @@ security = HTTPBearer(auto_error=False)
 def get_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if not credentials: raise HTTPException(status_code=401, detail="Token is Wrong")
     return credentials.credentials
+
+def get_walk_service(token=Depends(get_token), auth=Depends(get_auth)):
+    return WalkService(token=token, auth=auth, chain=None)
 
 router = APIRouter(
     prefix="/walk",
@@ -64,19 +69,29 @@ async def walk_location(
 ):
     response = await WalkService(token=token, auth=auth, chain=None).walk_location(request = request)
     return response
-@router.post("/end", responses={
-    201: { "model": response_schema.PostEndWalkResDTO, "description": "walk id, end_name, distance, time, avg_speed"},
+
+@router.get("/end", responses={
+    201: {"description": "success"},
     400: {"description": "Bad Request"},
     401: {"description": "Invalid Token"},
     404: {"description": "Not Found"},
     500: {"description": "Internal Server Error"}
 })
-async def post_end(
-    request: request_schema.PostEndWalkReqDTO,
-    token = Depends(get_token),
-    auth = Depends(get_auth)
-):
-    response = await WalkService(token=token, auth=auth, chain = None).post_walk_end(request)
+async def get_walk_summary(
+        walk_id:str,
+        walk_service:WalkService=Depends(get_walk_service)) -> response_schema.GetWalkEndDTO:
+    return await walk_service.get_walk_summary(walk_id)
+@router.post("/end", responses={
+    200: {"description": "Success"},
+    400: {"description": "Bad Request"},
+    401: {"description": "Invalid Token"},
+    404: {"description": "Not Found"},
+    500: {"description": "Internal Server Error"}
+})
+async def save_walk_summary(
+        request: request_schema.PostEndWalkReqDTO,
+        walk_service:WalkService = Depends(get_walk_service)):
+    response = await walk_service.post_walk_end(request.walk_id, request.time, request.distance)
     return response
 
 @router.patch("/end", responses={

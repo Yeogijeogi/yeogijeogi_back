@@ -10,6 +10,11 @@ from bson import ObjectId
 
 
 class MongoWalkDataBase(IWalkDAO):
+    async def check_walk_exists(self, walk_id: str) -> bool:
+        if await Walks.get(walk_id):
+            return True
+        return False
+
     async def post_start_walk(self, uuid, request):
         try:
             u = await Users.find_one(Users.id == uuid)

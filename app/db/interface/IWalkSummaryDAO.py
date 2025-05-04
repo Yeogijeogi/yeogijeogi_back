@@ -4,6 +4,9 @@ from app.schemas.walk_schema.base_schema import UserWalkSummary
 
 class IWalkSummaryDAO(ABC):
     @abstractmethod
+    async def check_walk_summary_exists(self, walk_id:str) -> bool: pass
+
+    @abstractmethod
     async def get_total_walk_summary(self, uuid:str) -> UserWalkSummary: pass
 
     @abstractmethod

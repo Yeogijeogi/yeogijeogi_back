@@ -1,5 +1,3 @@
-from pyexpat import features
-
 from app.db.dao.MongoUserDAO import MongoUserDAO
 from app.schemas.walk_schema import request_schema, response_schema
 from app.db.dao.MongoWalkSummaryDAO import MongoWalkSummaryDAO
@@ -7,7 +5,7 @@ from app.db.dao.MongoWalkDAO import MongoWalkDataBase
 from app.db.dao.MongoWalkPointsDAO import MongoWalkPointsDataBase
 from app.core.config import get_settings
 from fastapi import HTTPException
-from app.dependencies.auth import get_uuid
+from app.services.mongo_filters import check_walk_exists, check_walk_summary_exists
 
 from math import radians, sin, cos, sqrt, atan2
 import json
@@ -115,20 +113,31 @@ class WalkService:
 
         return str(walk_id)
 
+    @check_walk_exists
     async def walk_location(self, request = request_schema.PostLocationReqDTO):
         uuid = self.auth.verify_token(self.token)
         response = await MongoWalkPointsDataBase().post_walk_point(request=request)
         return response
 
-    async def post_walk_end(self, request):
-        uuid = self.auth.verify_token(self.token)
-        points = await MongoWalkPointsDataBase().get_all_points(walk_id=request.walk_id)
-        walk_info = await MongoWalkDataBase().get_walk(walk_id = request.walk_id)
+    @check_walk_exists
+    async def post_walk_end(self, walk_id:str, time:int, distance:float):
+        await MongoWalkSummaryDAO().create_walk_summary(walk_id, time, distance)
+        return True
+
+    @check_walk_exists
+    @check_walk_summary_exists
+    async def patch_end(self, request = request_schema.PatchSaveWalkReqDTO):
+        await MongoWalkSummaryDAO().patch_walk(request)
+        return True
+
+    @check_walk_exists
+    async def get_walk_summary(self, walk_id) -> response_schema.GetWalkEndDTO:
+        points = await MongoWalkPointsDataBase().get_all_points(walk_id)
+        walk_info = await MongoWalkDataBase().get_walk(walk_id)
 
         len_data = len(points)
         time_diff = datetime.datetime.now() - walk_info.created_at
         time_diff = int(time_diff.total_seconds() // 60)
-
         dist = 0
 
         def haversine(lat1, lon1, lat2, lon2):
@@ -144,16 +153,10 @@ class WalkService:
             lon2, lat2 = points[i + 1]["location"]
             dist += haversine(lat1, lon1, lat2, lon2)
 
-        start_name, end_name = await MongoWalkSummaryDAO().create_walk_summary(request, time_diff, dist)
-
-        return response_schema.PostEndWalkResDTO(
+        start_name, end_name = walk_info.start_name, walk_info.end_name
+        return response_schema.GetWalkEndDTO(
             start_name=start_name,
             end_name=end_name,
             distance=dist,
             time=time_diff,
-            avg_speed=dist/time_diff if time_diff != 0 else 0
         )
-
-    async def patch_end(self, request = request_schema.PatchSaveWalkReqDTO):
-        await MongoWalkSummaryDAO().patch_walk(request)
-        return True
