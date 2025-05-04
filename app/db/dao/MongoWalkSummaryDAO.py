@@ -8,6 +8,11 @@ from app.db.interface.IWalkSummaryDAO import IWalkSummaryDAO
 
 
 class MongoWalkSummaryDAO(IWalkSummaryDAO):
+    async def check_walk_summary_exists(self, walk_id: str) -> bool:
+        if await WalkSummary.find_one(WalkSummary.walk_id.id == walk_id):
+            return True
+        return False
+
     async def get_total_walk_summary(self, uuid:str) -> UserWalkSummary:
         k = await Walks.aggregate(
             [{
@@ -33,19 +38,13 @@ class MongoWalkSummaryDAO(IWalkSummaryDAO):
             print("Error:", e)
             raise HTTPException(status_code=500, detail="Database Connection Failed")
 
-    async def create_walk_summary(self, request, time_diff, dist):
-        try:
-            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
-            ws = WalkSummary(
-                walk_id=w.id,
-                mood = 0,
-                difficulty=0,
-                memo = "",
-                time=time_diff,
-                distance=dist
-            )
-            await ws.insert()
-            return w.start_name, w.end_name
-        except Exception as e:
-            print("Error:", e)
-            raise HTTPException(status_code=500, detail="Database Connection Failed")
+    async def create_walk_summary(self, walk_id:str, time:int, distance:float):
+        w = await Walks.find_one(Walks.id == ObjectId(walk_id))
+        ws = WalkSummary(
+            walk_id=w,
+            time=time,
+            difficulty=0,
+            mood = 0,
+            memo = "",
+            distance=distance)
+        await ws.insert()

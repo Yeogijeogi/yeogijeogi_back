@@ -18,5 +18,11 @@ class PatchSaveWalkReqDTO(BaseModel):
     mood: int
     difficulty: int
     memo: str
+
 class PostEndWalkReqDTO(BaseModel):
     walk_id: str
+    start_name: str
+    end_name: str
+    end_address: str
+    distance: float
+    time: int
