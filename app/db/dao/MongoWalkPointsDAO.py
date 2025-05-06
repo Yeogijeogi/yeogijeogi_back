@@ -27,7 +27,7 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
 
     async def post_walk_point(self, request):
         try:
-            w = await Walks.find_one(Walks.id == ObjectId(request.walk_id))
+            w = await Walks.get(request.walk_id)
             l = []
             for data in request.routes:
                 wp = WalkPoints(

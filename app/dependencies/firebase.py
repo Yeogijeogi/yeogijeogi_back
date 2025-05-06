@@ -1,14 +1,16 @@
 from fastapi import HTTPException
-from firebase_admin import storage
+from firebase_admin import storage, auth
 import jwt
 
 def check_token(token):
-    return jwt.decode(token, "secret", algorithms=["HS256"])
+    return auth.verify_id_token(token)
+    # return jwt.decode(token, "secret", algorithms=["HS256"])
 
 class FirebaseAuth:
     def verify_token(self, token):
         try:
-            return check_token(token)["user_id"]
+            c = check_token(token)
+            return c["user_id"]
         except: raise HTTPException(status_code=401, detail="token validation failed")
 
     def develop_create_token(self, uid):
