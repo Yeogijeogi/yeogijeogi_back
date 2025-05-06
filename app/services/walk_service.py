@@ -113,7 +113,6 @@ class WalkService:
 
         return str(walk_id)
 
-    @check_walk_exists
     async def walk_location(self, request = request_schema.PostLocationReqDTO):
         uuid = self.auth.verify_token(self.token)
         response = await MongoWalkPointsDataBase().post_walk_point(request=request)
@@ -124,8 +123,6 @@ class WalkService:
         await MongoWalkSummaryDAO().create_walk_summary(walk_id, time, distance)
         return True
 
-    @check_walk_exists
-    @check_walk_summary_exists
     async def patch_end(self, request = request_schema.PatchSaveWalkReqDTO):
         await MongoWalkSummaryDAO().patch_walk(request)
         return True
