@@ -14,8 +14,8 @@ def get_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if not credentials: raise HTTPException(status_code=401, detail="Token is Wrong")
     return credentials.credentials
 
-def get_walk_service(token=Depends(get_token), auth=Depends(get_auth)):
-    return WalkService(token=token, auth=auth, chain=None)
+def get_walk_service(token=Depends(get_token), auth=Depends(get_auth), chain=Depends(get_openai_client)):
+    return WalkService(token=token, auth=auth, chain=chain)
 
 router = APIRouter(
     prefix="/walk",
@@ -34,11 +34,9 @@ async def chat_openai(
     walk_time: int = Query(...),
     view: int = Query(default=0),
     difficulty: int = Query(default=0),
-    chain=Depends(get_openai_client),
-    token=Depends(get_token),
-    auth=Depends(get_auth)
+    walk_service:WalkService=Depends(get_walk_service)
 ):
-    response = await WalkService(auth, token, chain).recommend(latitude=latitude, longitude=longitude, walk_time=walk_time,view=view, difficulty=difficulty)
+    response = await walk_service.recommend(latitude=latitude, longitude=longitude, walk_time=walk_time,view=view, difficulty=difficulty)
     return response
 
 @router.post("/start", responses={
@@ -50,10 +48,9 @@ async def chat_openai(
 })
 async def walk_start(
     request: request_schema.PostStartWalkReqDTO,
-    token = Depends(get_token),
-    auth=Depends(get_auth)
+    walk_service:WalkService=Depends(get_walk_service)
 ):
-    response = await WalkService(token = token, auth = auth, chain = None).walk_start(request = request)
+    response = await walk_service.walk_start(request = request)
     return response_schema.PostStartWalkResDTO(walk_id = response)
 @router.post("/location", responses={
     201: {"description": "success"},
@@ -64,10 +61,9 @@ async def walk_start(
 })
 async def walk_location(
     request: request_schema.PostLocationReqDTO,
-    token = Depends(get_token),
-    auth = Depends(get_auth)
+    walk_service:WalkService=Depends(get_walk_service)
 ):
-    response = await WalkService(token=token, auth=auth, chain=None).walk_location(request = request)
+    response = await walk_service.walk_location(request = request)
     return response
 
 @router.get("/end", responses={
@@ -103,8 +99,7 @@ async def save_walk_summary(
 })
 async def patch_end(
     request: request_schema.PatchSaveWalkReqDTO,
-    token=Depends(get_token),
-    auth=Depends(get_auth)
+    walk_service:WalkService=Depends(get_walk_service)
 ):
-    response = await WalkService(token=token, auth=auth, chain=None).patch_end(request=request)
+    response = await walk_service.patch_end(request=request)
     return response
