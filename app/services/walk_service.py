@@ -6,6 +6,7 @@ from app.db.dao.MongoWalkPointsDAO import MongoWalkPointsDataBase
 from app.core.config import get_settings
 from fastapi import HTTPException
 from app.services.mongo_filters import check_walk_exists, check_walk_summary_exists
+import re
 
 from math import radians, sin, cos, sqrt, atan2
 import json
@@ -33,17 +34,25 @@ class WalkService:
         tmap_app_key = get_settings().tmap_app_key
         start_response = requests.get(
             url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
-        ).json()
-        start_location = start_response["addressInfo"]["fullAddress"] if start_response["addressInfo"]["buildingName"] == "" else start_response["addressInfo"]["fullAddress"] + " " + start_response["addressInfo"]["buildingName"]
+        )
+        if start_response.status_code == 204 or start_response.status_code == 400:
+            raise HTTPException(status_code=204, detail="Wrong GeoCode or non supported region")
 
-        recom_response = await self.chain.ainvoke({
-            "start_location": start_location,
-            "walk_time": walk_time,
-            "view": view,
-            "difficulty": difficulty
-        })
-        json_response = json.loads(recom_response.replace("\\", ""))
-        #print("json_response", json_response)
+        start_response = start_response.json()
+
+        # print(start_response)
+        start_location = start_response["addressInfo"]["fullAddress"] if start_response["addressInfo"]["buildingName"] == "" else start_response["addressInfo"]["fullAddress"] + " " + start_response["addressInfo"]["buildingName"]
+        start_response = requests.get(
+            url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
+        )
+        print(start_response)
+        recom_response = self.chain(
+            start_location= start_location,
+            walk_time=walk_time,
+            view=view,
+            difficulty=difficulty)
+        # json_response = json.loads(recom_response.replace("\\", ""))
+        json_response = recom_response
         response_list = []
         for dest, i in zip(json_response['destinations'], [0, 1, 2]):
             dest_response = requests.get(
@@ -63,7 +72,16 @@ class WalkService:
                                                    "startName": start_location,
                                                    "endName": dest['address'] + " " + dest['name'],
                                                }
-                                         ).json()
+                                         )
+
+                try:
+                    # 제어문자 제거 후 파싱
+                    cleaned_text = re.sub(r'[\x00-\x1F\x7F]', '', route_response.text)
+                    route_response = json.loads(cleaned_text)
+                except json.JSONDecodeError as e:
+                    print("JSON 파싱 실패:", e)
+                    HTTPException(status_code=500)
+                # print(route_response.content)
                 #print("route_response", route_response)
                 if "error" in route_response:
                     raise HTTPException(status_code=501, detail=route_response['error'])

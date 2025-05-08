@@ -11,7 +11,7 @@ from app.db.models.walk_summary import WalkSummary
 
 class MongoCourseDAO(ICourseDAO):
     aggregate_query = [
-        {'$lookup': {'from': 'WalkPoints', 'localField': '_id', 'foreignField': 'walk_id.$id', 'as': 'last_point', 'pipeline': [{'$sort': {'created_at': -1}}, {'$limit': 1}]}},
+        {'$lookup': {'from': 'WalkPoints', 'localField': '_id', 'foreignField': 'walk_id.$id', 'as': 'last_point', 'pipeline': [{'$sort': {'_id': -1}}, {'$limit': 1}]}},
         {'$unwind': {'path': '$last_point'}},
         {'$lookup': {'from': 'WalkSummary', 'localField': '_id', 'foreignField': 'walk_id.$id', 'as': 'walk_summary'}},
         {'$unwind': {'path': '$walk_summary'}}]

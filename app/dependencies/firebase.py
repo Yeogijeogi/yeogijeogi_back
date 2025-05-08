@@ -22,11 +22,11 @@ def get_auth() -> FirebaseAuth:
 # TODO : 만약에 Blob이 존재하지 않는다면..?
 class FirebaseStorage:
     @classmethod
-    def remove_image_by_walk_id(self, walk_id):
-        prefix = "images/"
+    def remove_image_by_walk_id(self, walk_id:str, user_id:str):
+        prefix = "images"
         postfix = ".png"
         bucket = storage.bucket()
-        blob = bucket.get_blob(prefix + walk_id + postfix)
+        blob = bucket.get_blob(f"{prefix}/{user_id}/{walk_id}{postfix}")
         if blob:
             # only when blob exists
             blob.delete()
