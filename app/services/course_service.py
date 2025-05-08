@@ -54,6 +54,6 @@ class CourseService:
 
     @check_user_exists
     async def delete_course(self, walk_id: str) -> bool:
-        FirebaseStorage.remove_image_by_walk_id(walk_id)
+        FirebaseStorage.remove_image_by_walk_id(walk_id, self.user_database.user_id)
         return await self.course_database.delete_course_by_walk_id(self.user_database.user_id, walk_id)
 
