@@ -60,13 +60,9 @@ jobs:
       PROD_DOCKER_IMAGE: ${{ secrets.PROD_DOCKER_IMAGE }}
       PROD_DOCKER_CONTAINER: ${{ secrets.PROD_DOCKER_CONTAINER }}
       PROD_DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PROD_PORT: ${{ secrets.PROD_PORT }}
+      LOCAL_PORT: ${{ secrets.LOCAL_PORT }}
     steps:
-#      - name: Set Up ENV #env파일을 만들어서 ec2에 전달하는 코드
-#        run: |
-#           echo "PROD_DOCKER_CONTAINER=${{ secrets.PROD_DOCKER_CONTAINER}}" >> .env
-#           echo "PROD_DOCKER_IMAGE=${{ secrets.PROD_DOCKER_IMAGE}}" >> .env
-#           echo "DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}" >> .env
-#           cat .env
       - name: Docker Login (on self-hosted)
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
 
@@ -78,4 +74,4 @@ jobs:
       - name: Run Prod Container
         run: |
             sudo docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
-            sudo docker run --env-file ./.env -d -p 8000:8000 --name ${{ env.PROD_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
+            sudo docker run --env-file ./.env -d -p { env.PROD_PORT }:{ env.LOCAL_PORT } --name ${{ env.PROD_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
