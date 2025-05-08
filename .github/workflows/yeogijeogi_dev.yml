@@ -74,4 +74,4 @@ jobs:
       - name: Run Dev Container
         run: |
             sudo docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
-            sudo docker run --env-file ./.env -d -p { env.DEV_PORT }:{ env.LOCAL_PORT } --name ${{ env.DEV_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}
+            sudo docker run --env-file ./.env -d -p ${{ env.DEV_PORT }}:${{ env.LOCAL_PORT }} --name ${{ env.DEV_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.DEV_DOCKER_IMAGE }}

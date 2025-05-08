@@ -74,4 +74,4 @@ jobs:
       - name: Run Prod Container
         run: |
             sudo docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
-            sudo docker run --env-file ./.env -d -p { env.PROD_PORT }:{ env.LOCAL_PORT } --name ${{ env.PROD_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
+            sudo docker run --env-file ./.env -d -p ${{ env.PROD_PORT }}:${{ env.LOCAL_PORT }} --name ${{ env.PROD_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
