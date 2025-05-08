@@ -1,0 +1,74 @@
+name: Yeogijeogi Prod Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract Docker image metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ secrets.DOCKER_HUB_USERNAME }}/${{ env.PROD_DOCKER_IMAGE }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up Firebase Credentials
+        run: |
+          echo "$FIREBASE_CREDENTIALS" >> app/firebase_credentials.json
+        env:
+          FIREBASE_CREDENTIALS: ${{ secrets.FIREBASE_AUTH_CRED }}
+
+      - name: Set up .env FILE
+        run: |
+          echo "$ENV_FILE" >> app/.env
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/yeogijeogi:prod
+          annotations: ${{ steps.meta.outputs.annotations }}
+          provenance: true
+          sbom: true
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    env:
+      DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+      PROD_DOCKER_IMAGE: ${{ secrets.PROD_DOCKER_IMAGE }}
+      PROD_DOCKER_CONTAINER: ${{ secrets.PROD_DOCKER_CONTAINER }}
+      PROD_DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+      PROD_PORT: ${{ secrets.PROD_PORT }}
+      LOCAL_PORT: ${{ secrets.LOCAL_PORT }}
+    steps:
+      - name: Docker Login (on self-hosted)
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | sudo docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Stop and Remove Old Prod Containers
+        run: |
+          sudo docker stop ${{ env.PROD_DOCKER_CONTAINER }} || true && sudo docker rm ${{ env.PROD_DOCKER_CONTAINER }} || true
+          sudo docker rmi ${{ env.DOCKER_HUB_USERNAME }}/${{ env.PROD_DOCKER_IMAGE }} || true
+
+      - name: Run Prod Container
+        run: |
+            sudo docker pull ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
+            sudo docker run --env-file ./.env -d -p ${{ env.PROD_PORT }}:${{ env.LOCAL_PORT }} --name ${{ env.PROD_DOCKER_CONTAINER }} ${{ env.DOCKER_HUB_USERNAME}}/${{ env.PROD_DOCKER_IMAGE }}
