@@ -12,6 +12,8 @@ router = APIRouter(
 
 def get_user_service(user_id:str=Depends(get_uuid),):
     return UserService(MongoUserDAO(user_id), MongoWalkSummaryDAO())
+
+
 @router.post("", status_code=201, responses={
     401: { "description": "Invalid Token"},
     500: { "description": "Internal Server Error"}
@@ -35,5 +37,3 @@ async def get_user_info(user_service:UserService=Depends(get_user_service)):
 async def delete_user(user_service:UserService=Depends(get_user_service)):
     await user_service.delete_user()
     return True
-
-

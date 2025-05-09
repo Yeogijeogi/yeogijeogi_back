@@ -1,6 +1,6 @@
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from fastapi import Depends, HTTPException
-from app.dependencies.firebase import get_auth
+from app.dependencies.firebase import get_auth, FirebaseAuth
 
 security = HTTPBearer(auto_error=False)
 

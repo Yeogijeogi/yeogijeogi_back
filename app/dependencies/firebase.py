@@ -6,6 +6,10 @@ def check_token(token):
     return auth.verify_id_token(token)
     # return jwt.decode(token, "secret", algorithms=["HS256"])
 
+def delete_user(uid):
+    auth.delete_user(uid)
+    return True
+
 class FirebaseAuth:
     def verify_token(self, token):
         try:
@@ -15,6 +19,13 @@ class FirebaseAuth:
 
     def develop_create_token(self, uid):
         return jwt.encode({"user_id": uid}, 'secret', algorithm="HS256")
+
+    def delete_firebase_user(self, uid):
+        try:
+            delete_user(uid)
+            return True
+        except:
+            raise HTTPException(status_code=401, detail="token validation failed")
 
 def get_auth() -> FirebaseAuth:
     return FirebaseAuth()

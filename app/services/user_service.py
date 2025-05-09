@@ -1,7 +1,7 @@
 from app.db.interface.IUserDAO import IUserDAO
 from app.db.interface.IWalkSummaryDAO import IWalkSummaryDAO
 from app.schemas.user_schema.response_schema import GetUserResDTO
-
+from app.dependencies.firebase import get_auth
 
 class UserService:
     def __init__(self,
@@ -22,4 +22,5 @@ class UserService:
 
     async def delete_user(self) -> bool:
         await self.user_database.delete_user()
+        get_auth().delete_firebase_user(self.user_database.user_id)
         return True
