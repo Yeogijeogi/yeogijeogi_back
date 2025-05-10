@@ -56,19 +56,26 @@ class WalkService:
         response_list = []
         for dest, i in zip(json_response['destinations'], [0, 1, 2]):
             dest_response = requests.get(
-                url=f"https://apis.openapi.sk.com/tmap/geo/fullAddrGeo?version=1&fullAddr={dest['name'] + ' ' + dest['address']}&appKey={tmap_app_key}",
+                url=f"https://apis.openapi.sk.com/tmap/geo/fullAddrGeo?version=1&fullAddr={dest['name']}&appKey={tmap_app_key}",
             ).json()
             #print("dest_response", dest_response)
             if "error" in dest_response:
-                raise HTTPException(status_code=501, detail=dest_response['error'])
+                continue
+                #raise HTTPException(status_code=501, detail=dest_response['error'])
             else:
+                dest_x = dest_response['coordinateInfo']['coordinate'][0]["lon"] if dest_response['coordinateInfo']['coordinate'][0]["lon"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLon"]
+                dest_y = dest_response["coordinateInfo"]['coordinate'][0]['lat'] if dest_response['coordinateInfo']['coordinate'][0]["lat"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLat"]
+
+                if abs(float(dest_x) - longitude) >= 0.3 or abs(float(dest_y) - latitude) >= 0.3:
+                    continue
+
                 route_response = requests.post(f"https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1",
                                                headers={'appKey': tmap_app_key},
                                                data={
                                                    "startX": longitude,
                                                    "startY": latitude,
-                                                   "endX": dest_response['coordinateInfo']['coordinate'][0]["lon"] if dest_response['coordinateInfo']['coordinate'][0]["lon"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLon"],
-                                                   "endY": dest_response["coordinateInfo"]['coordinate'][0]['lat'] if dest_response['coordinateInfo']['coordinate'][0]["lat"] != "" else dest_response['coordinateInfo']['coordinate'][0]["newLat"],
+                                                   "endX": dest_x,
+                                                   "endY": dest_y,
                                                    "startName": start_location,
                                                    "endName": dest['address'] + " " + dest['name'],
                                                }
@@ -79,12 +86,14 @@ class WalkService:
                     cleaned_text = re.sub(r'[\x00-\x1F\x7F]', '', route_response.text)
                     route_response = json.loads(cleaned_text)
                 except json.JSONDecodeError as e:
-                    print("JSON 파싱 실패:", e)
-                    HTTPException(status_code=500)
+                    continue
+                    #print("JSON 파싱 실패:", e)
+                    #HTTPException(status_code=500)
                 # print(route_response.content)
                 #print("route_response", route_response)
                 if "error" in route_response:
-                    raise HTTPException(status_code=501, detail=route_response['error'])
+                    continue
+                    #raise HTTPException(status_code=501, detail=route_response['error'])
                 else:
                     route_list = []
                     dist = route_response["features"][0]["properties"]["totalDistance"]
