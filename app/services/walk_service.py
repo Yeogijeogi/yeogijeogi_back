@@ -15,6 +15,7 @@ import datetime
 
 tmap_address_list = ['city_do', 'gu_gun', 'eup_myun', 'ri', 'legalDong', 'adminDong','buildingName', 'buildingDong']
 
+
 class WalkService:
     def __init__(self, auth, token, chain) -> None:
         self.chain = chain
@@ -109,11 +110,19 @@ class WalkService:
                             for route in cur_route["geometry"]["coordinates"]:
                                 route_list.append({"latitude": route[1], "longitude": route[0]})
 
+                    #목적지 address에서 시*도 수준의 이름 제거
+                    def delete_sido_name(address: str):
+                        sido_name_list = ['서울특별시', '경기도', '인천광역시', '강원특별자치도', '충청남도', '충청북도', '세종특별자치시', '대전광역시', '광주광역시',
+                                     '전라남도', '전북특별자치도', '경상북도', '경상남도', '부산광역시', '울산광역시', '대구광역시', '제주특별자치도']
+                        for sido in sido_name_list:
+                            if sido in address:
+                                return address[len(sido) + 1: ]
+
                     dest_info = {
                         "location": route_list[-1],
                         "start_name": start_location,
                         "name":dest['name'],
-                        "address": dest['address'],
+                        "address": delete_sido_name(dest['address']),
                         "distance":dist,
                         "walks":dist//0.78,
                         "time":time//60,
@@ -125,6 +134,22 @@ class WalkService:
     #산책 시작 서비스
     async def walk_start(self, request = request_schema.PostStartWalkReqDTO):
         uuid = self.auth.verify_token(self.token)
+
+        latest_walk_id = await MongoWalkDataBase().get_latest_walk(uuid = uuid)
+
+        is_no_stored_walk_existed = await MongoWalkSummaryDAO().check_walk_exists(walk_id = latest_walk_id)
+
+        if is_no_stored_walk_existed:
+            save_latest_walk_request = request_schema.PatchSaveWalkReqDTO(
+                walk_id = str(latest_walk_id),
+                mood = 0,
+                difficulty = 0,
+                memo = ""
+            )
+
+            await MongoWalkSummaryDAO().create_walk_summary(latest_walk_id, 0, 0)
+            await MongoWalkSummaryDAO().patch_walk(save_latest_walk_request)
+
         walk_input = {
             "user_id": uuid,
             "start_name": request.start_name,
