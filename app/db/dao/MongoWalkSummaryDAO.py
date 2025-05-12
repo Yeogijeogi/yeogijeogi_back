@@ -48,3 +48,13 @@ class MongoWalkSummaryDAO(IWalkSummaryDAO):
             memo = "",
             distance=distance)
         await ws.insert()
+
+    async def check_walk_exists(self, walk_id: str):
+        w = await Walks.find_one(Walks.id == ObjectId(walk_id))
+
+        ws = await WalkSummary.find_one(WalkSummary.walk_id.id == w.id)
+
+        if ws:
+            return False
+        else:
+            return True
