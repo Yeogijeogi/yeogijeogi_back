@@ -36,7 +36,7 @@ class MongoWalkSummaryDAO(IWalkSummaryDAO):
 
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="Database Connection Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
     async def create_walk_summary(self, walk_id:str, time:int, distance:float):
         w = await Walks.find_one(Walks.id == ObjectId(walk_id))

@@ -19,12 +19,12 @@ class MongoUserDAO(IUserDAO):
 
     async def create_user(self):
         if await self.check_user_exists():
-            raise HTTPException(status_code=500, detail="User already exists")
+            raise HTTPException(status_code=500, detail="unknown-error")
         await Users(id=self.user_id).insert()
 
     async def delete_user(self):
         if not await self.check_user_exists():
-            raise HTTPException(status_code=500, detail="User does not exist")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
         w_list = await Walks.find(Walks.user_id.id == self.user_id).to_list()
 

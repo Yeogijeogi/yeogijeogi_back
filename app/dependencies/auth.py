@@ -5,7 +5,7 @@ from app.dependencies.firebase import get_auth, FirebaseAuth
 security = HTTPBearer(auto_error=False)
 
 def get_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if not credentials: raise HTTPException(status_code=401, detail="Token is Wrong")
+    if not credentials: raise HTTPException(status_code=401, detail="invalid-token")
     return credentials.credentials
 
 def get_uuid(token:str = Depends(get_token),

@@ -29,7 +29,7 @@ class WalkService:
         uuid = self.auth.verify_token(self.token)
         mongo_user_dao = MongoUserDAO(uuid)
         if not await mongo_user_dao.check_user_exists():
-            raise HTTPException(status_code=401, detail="Authentication Failed")
+            raise HTTPException(status_code=401, detail="invalid-token")
 
 
         tmap_app_key = get_settings().tmap_app_key
@@ -37,7 +37,7 @@ class WalkService:
             url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
         )
         if start_response.status_code == 204 or start_response.status_code == 400:
-            raise HTTPException(status_code=400, detail="Wrong GeoCode or non supported region")
+            raise HTTPException(status_code=400, detail="invalid-location")
 
         start_response = start_response.json()
 

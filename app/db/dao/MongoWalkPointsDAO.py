@@ -23,7 +23,7 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
             return True
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
     async def post_walk_point(self, request):
         try:
@@ -39,14 +39,14 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
             return True
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
     async def get_walk_points(self, walk_id):
         try:
             walk_points_data = await WalkPoints.find_one(WalkPoints.walk_id==walk_id)
             return walk_points_data
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="Database Connection Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
     async def get_all_points(self, walk_id):
         try:
@@ -63,4 +63,4 @@ class MongoWalkPointsDataBase(IWalkPointsDAO):
 
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="WalkPoint Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
