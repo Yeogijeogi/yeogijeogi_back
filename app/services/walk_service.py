@@ -37,7 +37,7 @@ class WalkService:
             url=f"https://apis.openapi.sk.com/tmap/geo/reversegeocoding?version={1}&lat={latitude}&lon={longitude}&appKey={tmap_app_key}",
         )
         if start_response.status_code == 204 or start_response.status_code == 400:
-            raise HTTPException(status_code=204, detail="Wrong GeoCode or non supported region")
+            raise HTTPException(status_code=400, detail="Wrong GeoCode or non supported region")
 
         start_response = start_response.json()
 
