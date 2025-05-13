@@ -38,3 +38,18 @@ class MongoWalkDataBase(IWalkDAO):
         except Exception as e:
             print("Error:", e)
             raise HTTPException(status_code=500, detail="Database Deletion Failed")
+
+    async def get_latest_walk(self, uuid):
+        try:
+            u = await Users.find_one(Users.id == uuid)
+
+            latest_walk = await Walks.find(Walks.user_id.id == u.id).sort("-created_at").first_or_none()
+
+            return latest_walk.id
+
+        except Exception as e:
+            print("Error: ", e)
+            raise HTTPException(status_code=500, detail="Walk Database Selection Failed")
+
+
+

@@ -14,3 +14,6 @@ class IWalkSummaryDAO(ABC):
 
     @abstractmethod
     async def patch_walk(self, request): pass
+
+    @abstractmethod
+    async def check_walk_exists(self, walk_id:str) -> bool: pass
