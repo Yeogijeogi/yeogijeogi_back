@@ -51,5 +51,20 @@ class MongoWalkDataBase(IWalkDAO):
             print("Error: ", e)
             raise HTTPException(status_code=500, detail="unknown-error")
 
+    async def check_user_has_walked(self, uuid):
+        try:
+            u = await Users.find_one(Users.id == uuid)
+            latest_walk = await Walks.find_one(Walks.user_id.id == u.id)
+
+            if latest_walk:
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code = 500, detail = "unknown-error")
+
+
 
 
