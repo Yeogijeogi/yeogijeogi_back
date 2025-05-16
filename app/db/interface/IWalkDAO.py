@@ -13,3 +13,6 @@ class IWalkDAO(ABC):
 
     @abstractmethod
     async def get_latest_walk(self, uuid): pass
+
+    @abstractmethod
+    async def check_user_has_walked(self, uuid): pass
