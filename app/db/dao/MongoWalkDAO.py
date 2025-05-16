@@ -29,7 +29,7 @@ class MongoWalkDataBase(IWalkDAO):
             return w.id
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="Walk Database Insertion Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
     async def get_walk(self, walk_id):
         try:
@@ -37,7 +37,7 @@ class MongoWalkDataBase(IWalkDAO):
             return walk_data
         except Exception as e:
             print("Error:", e)
-            raise HTTPException(status_code=500, detail="Database Deletion Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
 
     async def get_latest_walk(self, uuid):
         try:
@@ -49,7 +49,22 @@ class MongoWalkDataBase(IWalkDAO):
 
         except Exception as e:
             print("Error: ", e)
-            raise HTTPException(status_code=500, detail="Walk Database Selection Failed")
+            raise HTTPException(status_code=500, detail="unknown-error")
+
+    async def check_user_has_walked(self, uuid):
+        try:
+            u = await Users.find_one(Users.id == uuid)
+            latest_walk = await Walks.find_one(Walks.user_id.id == u.id)
+
+            if latest_walk:
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            print("Error:", e)
+            raise HTTPException(status_code = 500, detail = "unknown-error")
+
 
 
 

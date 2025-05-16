@@ -38,7 +38,7 @@ class CourseService:
     def check_user_exists(method):
         async def wrapper(instance, *args, **kwargs):
             if not await instance.user_database.check_user_exists():
-                raise HTTPException(status_code=404, detail="User don't exists")
+                raise HTTPException(status_code=404, detail="user-not-registered")
             return await method(instance, *args, **kwargs)
         return wrapper
 

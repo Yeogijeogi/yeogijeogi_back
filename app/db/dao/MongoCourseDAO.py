@@ -24,7 +24,7 @@ class MongoCourseDAO(ICourseDAO):
 
     async def get_one_course_by_walk_id(self, uuid:str, walk_id:str) -> CourseInfo:
         if await Walks.find_one(Walks.id == ObjectId(walk_id), Walks.user_id.id != uuid):
-            raise HTTPException(status_code=404, detail="Course Not Found")
+            raise HTTPException(status_code=404, detail="walk-not-found")
 
         return (await Walks.find(Walks.id == ObjectId(walk_id)).aggregate(
             aggregation_pipeline=self.aggregate_query,
@@ -32,7 +32,7 @@ class MongoCourseDAO(ICourseDAO):
 
     async def delete_course_by_walk_id(self, uuid:str, walk_id:str):
         if await Walks.find_one(Walks.id == ObjectId(walk_id), Walks.user_id.id != uuid):
-            raise HTTPException(status_code=404, detail="Course Not Found")
+            raise HTTPException(status_code=404, detail="walk-not-found")
 
         async with BulkWriter() as bulk_writer:
             await WalkPoints.find(WalkPoints.walk_id.id == ObjectId(walk_id)).delete(bulk_writer=bulk_writer)

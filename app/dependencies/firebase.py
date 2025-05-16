@@ -15,7 +15,7 @@ class FirebaseAuth:
         try:
             c = check_token(token)
             return c["user_id"]
-        except: raise HTTPException(status_code=401, detail="token validation failed")
+        except: raise HTTPException(status_code=401, detail="invalid-token")
 
     def develop_create_token(self, uid):
         return jwt.encode({"user_id": uid}, 'secret', algorithm="HS256")
@@ -25,7 +25,7 @@ class FirebaseAuth:
             delete_user(uid)
             return True
         except:
-            raise HTTPException(status_code=401, detail="token validation failed")
+            raise HTTPException(status_code=401, detail="invalid-token")
 
 def get_auth() -> FirebaseAuth:
     return FirebaseAuth()

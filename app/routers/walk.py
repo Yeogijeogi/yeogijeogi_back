@@ -11,7 +11,7 @@ from app.services.walk_service import WalkService
 security = HTTPBearer(auto_error=False)
 
 def get_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    if not credentials: raise HTTPException(status_code=401, detail="Token is Wrong")
+    if not credentials: raise HTTPException(status_code=401, detail="invalid-token")
     return credentials.credentials
 
 def get_walk_service(token=Depends(get_token), auth=Depends(get_auth), chain=Depends(get_openai_client)):
